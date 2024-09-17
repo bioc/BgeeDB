@@ -14,9 +14,11 @@ vignette: >
 The package retrieves the annotation of RNA-seq, single cell full length RNA-seq and Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<https://www.bgee.org/analysis/top-anat>), but with more flexibility in the choice of parameters and developmental stages.
 
 In summary, the BgeeDB package allows to: 
-* 1. List annotation of RNA-seq, single cell full length RNA-seq and microarray data available the Bgee database
-* 2. Download the processed gene expression data available in the Bgee database
-* 3. Download the gene expression calls and use them to perform TopAnat analyses 
+
+
+1. List annotation of RNA-seq, single cell full length RNA-seq and microarray data available the Bgee database
+2. Download the processed gene expression data available in the Bgee database
+3. Download the gene expression calls and use them to perform TopAnat analyses 
 
 The pipeline used to generate Bgee expression data is documented and publicly available at (<https://github.com/BgeeDB/bgee_pipeline>)
 
@@ -103,17 +105,20 @@ Alternatively, you can choose to download data from one RNA-seq experiment from 
 data_bgee_mouse_gse30617 <- getData(bgee, experimentId = "GSE30617")
 ```
 
-It is possible to download data by combining filters : 
-* experimentId : one or more experimentId,
-* sampleId : one or more sampleId (i.e libraryId for RNA-Seq and ChipId for Affymetrix),
-* anatEntityId : one or more anatomical entity ID from the UBERON ontology (https://uberon.github.io/),
-* withDescendantAnatEntities : filter on the selected anatEntityId and all its descendants (from Bgee 15.0),
-* stageId : one or more developmental stage ID from the developmental stage ontologies (https://github.com/obophenotype/developmental-stage-ontologies),
-* withDescendantStages : filter on the selected stageId and all its descendants (from Bgee 15.0)
-* cellTypeId : one or more cell type, only for single cell datatype (from Bgee 15.0),
-* withDescendantCellTypes : filter on the selected cellTypeId and all its descendants (from Bgee 15.0)
-* sex : one or more sex (from Bgee 15.0),
-* strain : one or more strain (from Bgee 15.0),
+It is possible to download data by combining filters :  
+
+
+  * experimentId : one or more experimentId,  
+  * sampleId : one or more sampleId (i.e libraryId for RNA-Seq and ChipId for Affymetrix),  
+  * anatEntityId : one or more anatomical entity ID from the UBERON ontology (https://uberon.github.io/),  
+  * withDescendantAnatEntities : filter on the selected anatEntityId and all its descendants (from Bgee 15.0),  
+  * stageId : one or more developmental stage ID from the developmental stage ontologies (https://github.com/obophenotype/developmental-stage-ontologies),  
+  * withDescendantStages : filter on the selected stageId and all its descendants (from Bgee 15.0),  
+  * cellTypeId : one or more cell type, only for single cell datatype (from Bgee 15.0),  
+  * withDescendantCellTypes : filter on the selected cellTypeId and all its descendants (from Bgee 15.0),  
+  * sex : one or more sex (from Bgee 15.0),  
+  * strain : one or more strain (from Bgee 15.0),  
+
 ``` {r eval=FALSE}
 # Examples of data downloading using different filtering combination
 # retrieve mouse RNA-Seq data for heart or brain
