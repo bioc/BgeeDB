@@ -9,7 +9,8 @@ loadTopAnatData(
   callType = "presence",
   confidence = NULL,
   stage = NULL,
-  timeout = 1800
+  timeout = 1800,
+  callFileType = NULL
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ For information, the most useful stages (going no deeper than level 3 of the ont
 timeout used by default in R to download files. If not provided the timeout will be
 fixed at 1800 secondes. When the functions exits (either naturally or as the result
 of an error) the download timeout go back to the original one used in the R session.}
+
+\item{callFileType}{A character indicating the kind of expression calls to retrieve: "propagated", the calls of each condition aggregating the observations made in the condition and in all its substructures and cell types, to run the classic test of topGO, without decorrelation; or "observed", the calls of each condition computed from the observations made in the condition itself, to run the decorrelation algorithms of topGO (see the \code{topAnat.R} function). The propagated calls are available from Bgee 16, the default is NULL: "propagated" from Bgee 16, "observed" for the previous releases, which only have the observed calls.}
 }
 \value{
 A list of 5 elements:
@@ -62,7 +65,8 @@ A list of 5 elements:
 This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology.
 }
 \details{
-The expression calls come from Bgee (\url{https://www.bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{https://ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data might be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
+The expression calls come from Bgee (\url{https://www.bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{https://ontobee.org/ontology/UBERON}). For the Bgee releases prior to 16, the mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated): the topGO package propagates them, see the \code{topAnat.R} function.
+From Bgee 16, the conditions are anatomical structures, possibly restricted to a cell type, identified by the ID of the cell type and the ID of the anatomical structure separated by "-", or by the ID of the anatomical structure alone when no specific cell type is targeted. The expression calls are then either propagated (see the \code{callFileType} argument), the expression of a gene in a condition being computed from the observations made in the condition and in all its substructures and cell types, to run the classic test of topGO without decorrelation, or observed, computed from the observations made in the condition itself, and propagated by topGO for its decorrelation algorithms (see the \code{topAnat.R} function).
 }
 \examples{
 {

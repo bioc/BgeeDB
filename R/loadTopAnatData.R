@@ -2,7 +2,8 @@
 #'
 #' @description This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology.
 #'
-#' @details The expression calls come from Bgee (\url{https://www.bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{https://ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data might be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
+#' @details The expression calls come from Bgee (\url{https://www.bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{https://ontobee.org/ontology/UBERON}). For the Bgee releases prior to 16, the mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated): the topGO package propagates them, see the \code{topAnat.R} function.
+#' From Bgee 16, the conditions are anatomical structures, possibly restricted to a cell type, identified by the ID of the cell type and the ID of the anatomical structure separated by "-", or by the ID of the anatomical structure alone when no specific cell type is targeted. The expression calls are then either propagated (see the \code{callFileType} argument), the expression of a gene in a condition being computed from the observations made in the condition and in all its substructures and cell types, to run the classic test of topGO without decorrelation, or observed, computed from the observations made in the condition itself, and propagated by topGO for its decorrelation algorithms (see the \code{topAnat.R} function).
 #'
 #' @param myBgeeObject An output object from Bgee$new().
 #'
@@ -34,6 +35,8 @@
 #' retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality".
 #' For Bgee release 14 and above, options are "silver" (default) and "gold".
 #'
+#' @param callFileType A character indicating the kind of expression calls to retrieve: "propagated", the calls of each condition aggregating the observations made in the condition and in all its substructures and cell types, to run the classic test of topGO, without decorrelation; or "observed", the calls of each condition computed from the observations made in the condition itself, to run the decorrelation algorithms of topGO (see the \code{topAnat.R} function). The propagated calls are available from Bgee 16, the default is NULL: "propagated" from Bgee 16, "observed" for the previous releases, which only have the observed calls.
+#'
 #' @param timeout local timeout used when the function is run. It allows to modify the
 #' timeout used by default in R to download files. If not provided the timeout will be
 #' fixed at 1800 secondes. When the functions exits (either naturally or as the result
@@ -57,8 +60,12 @@
 #'
 #' @import utils digest
 #' @export
-loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL, timeout = 1800){
+loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL, timeout = 1800,
+                            callFileType = NULL){
   OLD_WEBSERVICE_VERSION = '13.2'
+  ## The first release serving the expression calls from the files generated for topAnat
+  CALL_FILE_VERSION = '16.0'
+  ROOT_STAGE_ID = 'UBERON:0000104'
 
   ## check that fields of Bgee object are not empty
   if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0 | length(myBgeeObject$sendStats) == 0){
@@ -81,6 +88,19 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     if ( (confidence != "all") && (confidence != "high_quality") ){
       stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ", myBgeeObject$release, " allowed values are \"all\" or \"high_quality\".\nBy default \"all\" quality is selected."))
     }
+  }
+  ## From Bgee 16, the calls are either propagated to the ancestors of the conditions they are made
+  ## in, or only observed in each condition. The releases prior to 16 only serve the observed ones.
+  callFilesAvailable <- compareVersion(gsub("_", ".", myBgeeObject$release), CALL_FILE_VERSION) >= 0
+  if ( is.null(callFileType) ){
+    callFileType <- if ( callFilesAvailable ) "propagated" else "observed"
+  }
+  if ( length(callFileType) != 1 || !callFileType %in% c("propagated", "observed") ){
+    stop("ERROR: the call file type must be \"propagated\" or \"observed\".")
+  }
+  if ( !callFilesAvailable && callFileType != "observed" ){
+    stop(paste0("ERROR: only the observed expression calls can be retrieved for Bgee ", myBgeeObject$release,
+                ", please use callFileType = \"observed\". The propagated calls are available from Bgee 16."))
   }
 
   ## Set the timeout option to timeout value to let some time to the server to send data (default is 1800 sec.)
@@ -195,14 +215,34 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     topAnat_dataType <- topAnat_dataType[! topAnat_dataType %in% c("sc_full_length", "sc_droplet_based")]
     topAnat_dataType <- append(topAnat_dataType, "sc_rna_seq")
   }
+  ## Bgee 16 has no Affymetrix and no EST data any more
+  if ( callFilesAvailable ){
+    removedDataTypes <- intersect(topAnat_dataType, c("affymetrix", "est"))
+    if ( length(removedDataTypes) > 0 ){
+      message("WARNING: there are no ", paste(removedDataTypes, collapse = " and "), " data in Bgee ",
+              myBgeeObject$release, ", they are not used for this topAnat analysis.")
+      topAnat_dataType <- setdiff(topAnat_dataType, removedDataTypes)
+    }
+    if ( length(topAnat_dataType) == 0 ){
+      stop(paste0("ERROR: none of the data types of the Bgee object is available in Bgee ", myBgeeObject$release,
+                  ", please use \"rna_seq\", \"in_situ\", \"sc_full_length\" or \"sc_droplet_based\"."))
+    }
+  }
+  ## When all the data types of the release are requested, they are not listed one by one
+  allReleaseDataTypes <- if ( callFilesAvailable ) c("in_situ", "rna_seq", "sc_rna_seq") else
+    c("rna_seq", "affymetrix", "est", "in_situ", "sc_rna_seq")
+  allDataTypesRequested <- all(allReleaseDataTypes %in% topAnat_dataType)
 
   gene2anatomyFileName <- paste0("topAnat_GeneToAnatEntities_", myBgeeObject$speciesId, "_", toupper(callType))
-  ## If a stage is specified, add it to file name
+  ## If a stage is specified, add it to file name. From Bgee 16, no stage requested is named as the root of the
+  ## stages, whose calls are retrieved, so that both requests share the same file
   if ( !is.null(stage) ){
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", gsub(":", "_", stage))
+  } else if ( callFilesAvailable ){
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", gsub(":", "_", ROOT_STAGE_ID))
   }
   ## If all data types specified, no need to add anything to file name. Otherwise, specify data types in file name
-  if ( sum(topAnat_dataType %in% c("rna_seq","affymetrix","est","in_situ", "sc_rna_seq")) < 5 ){
+  if ( !allDataTypesRequested ){
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(topAnat_dataType), collapse="_")))
   }
   ## If high quality data needed, specify in file name. Otherwise not specified
@@ -212,6 +252,10 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     if ( confidence == "high_quality" ){
       gene2anatomyFileName <- paste0(gene2anatomyFileName, "_HIGH")
     }
+  }
+  ## From Bgee 16, the kind of calls
+  if ( callFilesAvailable ){
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(callFileType))
   }
   gene2anatomyFileName <- paste0(gene2anatomyFileName, ".tsv")
 
@@ -223,14 +267,16 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
     myUrl <- myBgeeObject$topAnatUrl
-    if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    if ( callFilesAvailable ){
+      myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=r_package&action=get_expression_calls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=CONDITION_ID&call_file_type=", callFileType, "&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    } else if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
       myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=r_package&action=get_expression_calls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     }else {
       myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     }
 
     ## Add data type to file name: only if not all data types asked
-    if ( sum(topAnat_dataType %in% c("rna_seq","sc_rna_seq","affymetrix","est","in_situ")) < 5 ){
+    if ( !allDataTypesRequested ){
       for (type in toupper(sort(topAnat_dataType))){
         myUrl <- paste0(myUrl, "&data_type=", type)
       }
@@ -289,13 +335,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
-  ## Process the data and build the final list to return. The calls served by the Bgee releases
-  ## prior to 16 are made in the observed anatomical entities.
+  ## Process the data and build the final list to return
   return(loadTopAnatDataFromFiles(
     gene2conditionFile = file.path(myBgeeObject$pathToData, gene2anatomyFileName),
     conditionNamesFile = file.path(myBgeeObject$pathToData, organNamesFileName),
     conditionRelationsFile = file.path(myBgeeObject$pathToData, organRelationshipsFileName),
-    callFileType = "observed", myBgeeObject = myBgeeObject))
+    callFileType = callFileType, myBgeeObject = myBgeeObject))
 }
 
 ## Builds the list returned by loadTopAnatData from three files: the mapping of genes to the conditions
