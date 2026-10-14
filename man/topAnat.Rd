@@ -2,9 +2,12 @@
 % Please edit documentation in R/topAnat.R
 \name{topAnat}
 \alias{topAnat}
+\alias{runTest,topAnatData,character,character-method}
 \title{Produces an object allowing to perform GO-like enrichment of anatomical terms using the topGO package}
 \usage{
 topAnat(topAnatData, geneList, nodeSize = 10, ...)
+
+\S4method{runTest}{topAnatData,character,character}(object, algorithm, statistic, ...)
 }
 \arguments{
 \item{topAnatData}{a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame, produced by the function loadTopAnatData().}
@@ -14,6 +17,12 @@ topAnat(topAnatData, geneList, nodeSize = 10, ...)
 \item{nodeSize}{Minimum number of genes mapped to a node for it to be tested. Default is 10.}
 
 \item{...}{Additional parameters as passed to build topGOdata object in topGO package.}
+
+\item{object}{A topAnatData class object, produced by the function \code{topAnat}.}
+
+\item{algorithm}{The algorithm of topGO to run, see the function \code{runTest} of topGO.}
+
+\item{statistic}{The test statistic of topGO to use, see the function \code{runTest} of topGO.}
 }
 \value{
 topAnatObject, a topAnatData class object, ready for gene set enrichment testing with topGO.
@@ -23,6 +32,7 @@ This function produces a topAnatObject, ready to use for gene set enrichment tes
 }
 \details{
 To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), the data are formatted to use the topGO package for testing. This package is interesting because it propagates the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods. Expert users should be able to use information from the topAnatObject to test enrichment with other packages than topGO.
+From Bgee 16, the expression calls are either propagated by Bgee or observed in each condition (see the \code{callFileType} argument of \code{loadTopAnatData}). topGO does not propagate again the propagated calls: only its classic algorithm, without decorrelation, can be run on them with \code{runTest}. topGO propagates the observed calls, for its decorrelation algorithms: the classic algorithm is refused on them. A message tells which applies.
 }
 \examples{
 {

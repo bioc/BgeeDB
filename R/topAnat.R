@@ -3,6 +3,13 @@
 #' @description This function produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package. This object uses the Uberon ontology instead of the GO ontology.
 #'
 #' @details To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), the data are formatted to use the topGO package for testing. This package is interesting because it propagates the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods. Expert users should be able to use information from the topAnatObject to test enrichment with other packages than topGO.
+#' From Bgee 16, the expression calls are either propagated by Bgee or observed in each condition (see the \code{callFileType} argument of \code{loadTopAnatData}). topGO does not propagate again the propagated calls: only its classic algorithm, without decorrelation, can be run on them with \code{runTest}. topGO propagates the observed calls, for its decorrelation algorithms: the classic algorithm is refused on them. A message tells which applies.
+#'
+#' @param object A topAnatData class object, produced by the function \code{topAnat}.
+#'
+#' @param algorithm The algorithm of topGO to run, see the function \code{runTest} of topGO.
+#'
+#' @param statistic The test statistic of topGO to use, see the function \code{runTest} of topGO.
 #'
 #' @param topAnatData a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame, produced by the function loadTopAnatData().
 #'
@@ -73,6 +80,21 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   if( length(topAnatData$organ.names[,1]) == 0 ) {
     stop("ERROR: the organ.names data frame of your topAnatData object is empty.")
   }
+  ## The kind of expression calls: those of the Bgee releases prior to 16 are observed. The data without
+  ## a Bgee object come from the files of the topAnat web page, from Bgee 16 or later.
+  callFileType <- if ( is.null(topAnatData$call.file.type) ) "observed" else topAnatData$call.file.type
+  propagatedCallsAvailable <- is.null(topAnatData$bgee.object$release) ||
+    compareVersion(gsub("_", ".", topAnatData$bgee.object$release), "16.0") >= 0
+  if ( callFileType == "propagated" ){
+    message("NOTE: the expression calls are propagated by Bgee, topGO does not propagate them again: ",
+            "only its classic algorithm, without decorrelation, can be run on them.")
+  } else if ( propagatedCallsAvailable ){
+    message("NOTE: the expression calls are observed in each condition, topGO propagates them to the parent ",
+            "conditions: only its decorrelation algorithms can be run on them, the classic algorithm is run ",
+            "on the propagated calls.")
+  } else {
+    message("NOTE: the expression calls are observed in each condition, topGO propagates them to the parent conditions.")
+  }
 
   ## Test if gene list is fine
   cat("\nChecking gene list......................\n")
@@ -108,8 +130,11 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
                          allGenes = geneList,
                          nodeSize = nodeSize,
                          parentMapping = topAnatData$organ.relationships,
-                         gene2Nodes = topAnatData$gene2anatomy
+                         gene2Nodes = topAnatData$gene2anatomy,
+                         propagateGenes = callFileType != "propagated"
                          )
+  topAnatObject@callFileType <- callFileType
+  topAnatObject@propagatedCallsAvailable <- propagatedCallsAvailable
 
   ## Create a hash from the topAnatObject and the topAnatData objects
   myAnalysisInfo <- c(topAnatObject, topAnatData)
@@ -152,6 +177,28 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   geneID <- rep(names(gene2Nodes), sapply(gene2Nodes, length))
 
   return(split(geneID, allNodes))
+}
+#################################################################
+## Annotates each node of the graph with the genes of its own term only, without propagating them to its
+## ancestors as topGO:::mapGenes2GOgraph does: for the expression calls propagated by Bgee, which already
+## hold the expression in the substructures and cell types. The root holds every gene, as with topGO:
+## the feasible genes are read from it.
+
+.mapGenes2Nodes <- function(dag, mostSpecificTerms) {
+  allNodes <- graph::nodes(dag)
+  geneTerms <- lapply(allNodes, function(x) {
+    e <- new.env(hash = TRUE, parent = emptyenv())
+    if (x %in% names(mostSpecificTerms))
+      multiassign(mostSpecificTerms[[x]], rep(TRUE, length(mostSpecificTerms[[x]])), envir = e)
+    return(e)
+  })
+  names(geneTerms) <- allNodes
+  allGenes <- unique(unlist(mostSpecificTerms, use.names = FALSE))
+  multiassign(allGenes, rep(FALSE, length(allGenes)), envir = geneTerms[[getGraphRoot(dag)]])
+
+  graph::nodeDataDefaults(dag, attr = "genes") <- emptyenv()
+  graph::nodeData(dag, allNodes, attr = "genes") <- geneTerms
+  return(dag)
 }
 #################################################################
 
@@ -248,7 +295,13 @@ setClass("topAnatData",
            ## Added slot to give us the structure of the ontology
            parentMapping = "character",
            ## Added slot to give us the mapping of genes to terms of the ontology
-           gene2Nodes = "character"),
+           gene2Nodes = "character",
+           ## Added slot giving the kind of expression calls: "observed", propagated by topGO, or
+           ## "propagated" by Bgee
+           callFileType = "character",
+           ## Added slot telling whether the release of the calls has propagated calls, from Bgee 16:
+           ## the classic algorithm is then only run on them
+           propagatedCallsAvailable = "logical"),
          contains = "topGOdata"
 )
 
@@ -268,6 +321,9 @@ setMethod("initialize", "topAnatData",
                    parentMapping,
                    ## annotation data
                    gene2Nodes,
+                   ## whether topGO propagates the genes of the terms to their ancestors, FALSE for the
+                   ## expression calls propagated by Bgee
+                   propagateGenes = TRUE,
                    ## additional parameters
                    ...) {
 
@@ -314,12 +370,15 @@ setMethod("initialize", "topAnatData",
             g <- .buildGraph.topology(names(mostSpecificTerms), parentMapping)
             cat(" ( ",  graph::numNodes(g), " Ontology terms and ", graph::numEdges(g), " relations. )\n")
 
-            ## probably is good to store the leves but for the moment we don't
-            .nodeLevel <- buildLevels(g, leafs2root = TRUE)
-
             ## annotate the nodes in the graph with genes
             cat("\nAnnotating nodes (Can be long).......... ")
-            g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
+            if (propagateGenes) {
+              ## probably is good to store the leves but for the moment we don't
+              .nodeLevel <- buildLevels(g, leafs2root = TRUE)
+              g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
+            } else {
+              g <- .mapGenes2Nodes(g, mostSpecificTerms)
+            }
 
             ## select the feasible genes
             gRoot <- getGraphRoot(g)
@@ -338,4 +397,31 @@ setMethod("initialize", "topAnatData",
             }
 
             .Object
+          })
+
+## Runs a test of topGO, after checking that it suits the kind of expression calls: the classic algorithm,
+## without decorrelation, on the expression calls propagated by Bgee, and from Bgee 16, the decorrelation
+## algorithms on the observed calls, that topGO propagates.
+#' @rdname topAnat
+#' @export
+setMethod("runTest", signature(object = "topAnatData", algorithm = "character", statistic = "character"),
+          function(object, algorithm, statistic, ...) {
+            if (identical(object@callFileType, "propagated")) {
+              if (algorithm != "classic") {
+                stop(paste0("ERROR: the expression calls are propagated by Bgee, only the classic algorithm of topGO, ",
+                            "without decorrelation, can be run on them. The decorrelation algorithms need the observed ",
+                            "calls: please retrieve them with loadTopAnatData(..., callFileType = \"observed\")."))
+              }
+              message("Running the classic algorithm of topGO on the expression calls propagated by Bgee, ",
+                      "not propagated again by topGO.")
+            } else {
+              if (algorithm == "classic" && isTRUE(object@propagatedCallsAvailable)) {
+                stop(paste0("ERROR: from Bgee 16, the classic algorithm, without decorrelation, is run on the expression ",
+                            "calls propagated by Bgee: please retrieve them with loadTopAnatData(..., callFileType = ",
+                            "\"propagated\"). The observed calls are for the decorrelation algorithms."))
+              }
+              message("Running the ", algorithm, " algorithm of topGO on the observed expression calls, ",
+                      "propagated by topGO.")
+            }
+            callNextMethod()
           })
