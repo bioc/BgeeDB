@@ -13,7 +13,7 @@
 #'   \item{"est: target only ESTs data"}
 #'   \item{"in_situ: target only In Situ data"}
 #' }
-#' By default all data type are included: \code{c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")}. For download of quantitative expression data, a single data type should be chosen among "rna_seq", "sc_full_length", sc_droplet_based" or "affymetrix".
+#' By default all the data types of the release are included: \code{c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")}, without "affymetrix" and "est" from Bgee 16, which has no Affymetrix and no EST data any more. For download of quantitative expression data, a single data type should be chosen among "rna_seq", "sc_full_length", sc_droplet_based" or "affymetrix".
 #'
 #' @field pathToData Path to the directory where the data files are stored. By default the working directory is used. If many analyses are launched in parallel, please consider re-using the cached data files instead of redownlaoding them for each analysis.
 #'
@@ -59,11 +59,8 @@ Bgee <- setRefClass(
     initialize = function(..., sqlite_extension="_bgee.db") {
       callSuper(..., sqlite_extension="_bgee.db")
 
-      ## check data type
-      if (length(dataType) == 0) {
-        cat("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"rna_seq\",\"affymetrix\",\"est\",\"in_situ\",\"sc_full_length\", \"sc_droplet_based\") for the next steps.\n")
-        dataType <<- c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")
-      } else if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")) %in% 1:6 ){
+      ## check data type. When none is specified, those of the release are used, set once the release is known
+      if ( length(dataType) > 0 && !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")) %in% 1:6 ){
         stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"sc_full_length\", \"sc_droplet_based\", \"est\" and \"in_situ\".")
       }
       if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ", "sc_full_length", "sc_droplet_based")) ){
@@ -117,6 +114,13 @@ Bgee <- setRefClass(
         }
       } else {
         stop("ERROR: The specified release number is invalid.")
+      }
+
+      ## Data types used when none is specified: those of the release
+      if (length(dataType) == 0) {
+        dataType <<- .releaseDataTypes(release)
+        cat(paste0("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"",
+                   paste(dataType, collapse = "\",\""), "\") for the next steps.\n"))
       }
 
       ## Specify URL to use to download expression calls. Can be done for any species
@@ -304,6 +308,12 @@ Bgee <- setRefClass(
   )
 )
 
-
-
-
+## The data types of a Bgee release, those of a Bgee object created without any: Bgee 16 has no
+## Affymetrix and no EST data any more
+.releaseDataTypes <- function(release) {
+  dataTypes <- c("rna_seq", "affymetrix", "est", "in_situ", "sc_full_length", "sc_droplet_based")
+  if (compareVersion(gsub("_", ".", release), "16.0") >= 0) {
+    dataTypes <- setdiff(dataTypes, c("affymetrix", "est"))
+  }
+  return(dataTypes)
+}

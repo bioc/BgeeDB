@@ -23,7 +23,7 @@ Bgee (\url{https://www.bgee.org}) integrates different expression data types (RN
 \item{"est: target only ESTs data"}
 \item{"in_situ: target only In Situ data"}
 }
-By default all data type are included: \code{c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")}. For download of quantitative expression data, a single data type should be chosen among "rna_seq", "sc_full_length", sc_droplet_based" or "affymetrix".}
+By default all the data types of the release are included: \code{c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")}, without "affymetrix" and "est" from Bgee 16, which has no Affymetrix and no EST data any more. For download of quantitative expression data, a single data type should be chosen among "rna_seq", "sc_full_length", sc_droplet_based" or "affymetrix".}
 
 \item{\code{pathToData}}{Path to the directory where the data files are stored. By default the working directory is used. If many analyses are launched in parallel, please consider re-using the cached data files instead of redownlaoding them for each analysis.}
 

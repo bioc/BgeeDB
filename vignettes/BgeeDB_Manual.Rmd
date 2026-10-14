@@ -165,7 +165,7 @@ Similarly to the quantitative data download example above, the first step of a t
 bgee <- Bgee$new(species = "Danio_rerio", release = "15.2")
 ```
 
-*Note* : We are free to specify any data type of interest using the ```dataType``` argument among `rna_seq`, `sc_full_length`, `sc_droplet_based`, `affymetrix`, `est` or `in_situ`, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying `dataType=c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")`.
+*Note* : We are free to specify any data type of interest using the ```dataType``` argument among `rna_seq`, `sc_full_length`, `sc_droplet_based`, `affymetrix`, `est` or `in_situ`, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying `dataType=c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")`. From Bgee 16, which has no Affymetrix and no EST data any more, it is equivalent to specifying `dataType=c("rna_seq","sc_full_length","sc_droplet_based","in_situ")`.
 
 #### Download the data allowing to perform TopAnat analysis
 

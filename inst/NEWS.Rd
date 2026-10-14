@@ -7,6 +7,7 @@
     \item New argument callFileType of loadTopAnatData: the expression calls propagated by Bgee, default from Bgee 16, or the observed ones, that topGO propagates
     \item From Bgee 16, the classic algorithm of topGO, without decorrelation, runs on the propagated calls, that topGO does not propagate again. The decorrelation algorithms on the observed calls. Any other combination throws an error
     \item From Bgee 16, topAnat_galaxy runs the classic algorithm on the propagated calls
+    \item From Bgee 16, a Bgee object created without any data type uses the data types of the release
     \item New function printTopAnatGraph, drawing in a PDF file the conditions significant in a topAnat analysis and their ancestors, with their names
     \item loadTopAnatData reports the answer of the server when it refuses a query
   }
