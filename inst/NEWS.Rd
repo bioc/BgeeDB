@@ -1,6 +1,17 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.39.1 (2026-10)}{
+  \itemize{
+    \item topAnat can use the expression calls of Bgee 16. These calls are made in anatomical structures possibly restricted to a cell type
+    \item New argument callFileType of loadTopAnatData: the expression calls propagated by Bgee, default from Bgee 16, or the observed ones, that topGO propagates
+    \item From Bgee 16, the classic algorithm of topGO, without decorrelation, runs on the propagated calls, that topGO does not propagate again. The decorrelation algorithms on the observed calls. Any other combination throws an error
+    \item From Bgee 16, topAnat_galaxy runs the classic algorithm on the propagated calls
+    \item New function printTopAnatGraph, drawing in a PDF file the conditions significant in a topAnat analysis and their ancestors, with their names
+    \item loadTopAnatData reports the answer of the server when it refuses a query
+  }
+}
+
 \section{Version 2.32 (2024-10)}{
   \itemize{
     \item Allows to download data from Bgee 15.2 with more bulk RNA-Seq and single-cell RNA-Seq
