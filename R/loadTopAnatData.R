@@ -124,7 +124,10 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
+    ## A query refused by the server makes download.file warn and fail without saying why: the answer of the server
+    ## is then retrieved below
+    success <- tryCatch(suppressWarnings(bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))),
+                        error = function(e) 1)
 
     if (success == 0){
       ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -140,11 +143,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       }
       cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
+      unlink(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
       serverAnswer = try(getURL(myUrl))
       if (class(serverAnswer) == "try-error"){
         stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
       } else {
-        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
+        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", trimws(serverAnswer)))
       }
     }
   }
@@ -167,7 +171,10 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
+    ## A query refused by the server makes download.file warn and fail without saying why: the answer of the server
+    ## is then retrieved below
+    success <- tryCatch(suppressWarnings(bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))),
+                        error = function(e) 1)
 
     if (success == 0){
       ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -183,11 +190,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       }
      cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
+      unlink(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
       serverAnswer = try(getURL(myUrl))
       if (class(serverAnswer) == "try-error"){
         stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
       } else {
-        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
+        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", trimws(serverAnswer)))
       }
     }
   }
@@ -306,7 +314,11 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       startTime <- Sys.time()
       tryCatch(
         {
-          bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+          ## download.file warns before failing: the warning is muffled for the error to be handled below. Catching
+          ## the warning instead would leave the loop without error, and query the server again immediately.
+          withCallingHandlers(
+            bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp")),
+            warning = function(w) invokeRestart("muffleWarning"))
           catchedError <- 0
         },
         error = function(x) {
@@ -316,10 +328,13 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
           # 40 sec to be thrown
           stopTime <- Sys.time()
           if (as.numeric(difftime(time1 = stopTime, time2 = startTime, units = "sec")) <= 40) {
-            stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", x))
+            unlink(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+            ## download.file does not say why the server refused the query: its answer is retrieved
+            serverAnswer <- try(getURL(myUrl), silent = TRUE)
+            stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n",
+                        if (inherits(serverAnswer, "try-error")) conditionMessage(x) else trimws(serverAnswer)))
           }
-        },
-        warning = function(x) {}
+        }
       )
     }
 
