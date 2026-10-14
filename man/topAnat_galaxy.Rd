@@ -30,6 +30,9 @@ topAnat_galaxy(
 \item{"affymetrix: target only Affymtrix microarray data"}
 }}
 
+\item{stageId}{A character indicating the developmental stage targeted by the analysis, as the
+\code{stage} argument of \code{loadTopAnatData}. Default is NULL, all the stages.}
+
 \item{foregroundGenes}{the list of genes for which TopAnat will find anatomical entities that
 have over or under-represented expression using annotations for that gene set, compared to the
 background genes. Can be NULL if foregroundGenesFile is provided.}
@@ -60,6 +63,9 @@ For Bgee release 14 and above, options are "silver" (default) and "gold".}
 }
 \description{
 This function GO-like enrichment of anatomical terms using the Uberon ontology.
+From Bgee 16, the classic algorithm, without decorrelation, runs on the expression calls propagated
+by Bgee, as the topAnat web page does, and the decorrelation algorithms on the observed calls, that
+topGO propagates.
 }
 \examples{
 {

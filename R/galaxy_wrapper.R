@@ -100,6 +100,9 @@ getSampleProcessedData_galaxy <-
 #' @title Run a GO-like enrichment of anatomical terms, mapped to genes by expression patterns
 #'
 #' @description This function GO-like enrichment of anatomical terms using the Uberon ontology.
+#' From Bgee 16, the classic algorithm, without decorrelation, runs on the expression calls propagated
+#' by Bgee, as the topAnat web page does, and the decorrelation algorithms on the observed calls, that
+#' topGO propagates.
 #' 
 #' @param species name of the species for which annotation have to be be retrieved (e.g Homo_sapiens)
 #' @param dataTypes The datatypes for which calls will to be retrieved. To be chosen among:
@@ -109,6 +112,8 @@ getSampleProcessedData_galaxy <-
 #'   \item{"sc_droplet_based: target only droplet based single-cell RNA-seq data"}
 #'   \item{"affymetrix: target only Affymtrix microarray data"}
 #' }
+#' @param stageId A character indicating the developmental stage targeted by the analysis, as the
+#' \code{stage} argument of \code{loadTopAnatData}. Default is NULL, all the stages.
 #' @param foregroundGenes the list of genes for which TopAnat will find anatomical entities that
 #' have over or under-represented expression using annotations for that gene set, compared to the
 #' background genes. Can be NULL if foregroundGenesFile is provided.
@@ -196,8 +201,11 @@ topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = N
     stop("resultFile parameter is required")
   }
   myBgeeObject <- createBgeeObject_galaxy(species = species, dataTypes = dataTypes)
+  ## The decorrelation algorithms need the observed calls. The classic algorithm runs on the calls retrieved
+  ## by default for the release: from Bgee 16, those propagated by Bgee, as on the topAnat web page
+  callFileType <- if (algorithm == "classic") NULL else "observed"
   myTopAnatData <- loadTopAnatData(myBgeeObject = myBgeeObject, stage = stageId, 
-                                   confidence = confidence)
+                                   confidence = confidence, callFileType = callFileType)
   
   if (is.null(foregroundGenes) && is.null(foregroundGenesFile)) {
     stop("Either foregroundGenes or foregroundGenesFile must be provided")
