@@ -124,7 +124,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   ## Send a query to our webservice for statistics purposes of topAnat use (even when cached files are used)
-  if (topAnatData$bgee.object$sendStats == TRUE){
+  if (isTRUE(topAnatData$bgee.object$sendStats)){
     myUrl <- paste0(topAnatData$bgee.object$topAnatUrl, "?page=stats&action=launch_top_anat_analysis&api_key=", topAnatData$bgee.object$apiKey, "&analysis_id=", analysisId, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     ## Send query, but no need to wait for the answer
     try(getURL(myUrl, followLocation = TRUE, .opts = list(timeout = 1)), silent=TRUE)

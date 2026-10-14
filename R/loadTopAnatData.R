@@ -2,7 +2,7 @@
 #'
 #' @description This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology.
 #'
-#' @details The expression calls come from Bgee (\url{http://bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data might be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
+#' @details The expression calls come from Bgee (\url{https://www.bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{https://ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data might be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
 #'
 #' @param myBgeeObject An output object from Bgee$new().
 #'
@@ -39,12 +39,13 @@
 #' fixed at 1800 secondes. When the functions exits (either naturally or as the result
 #' of an error) the download timeout go back to the original one used in the R session.
 #'
-#' @return A list of 4 elements:
+#' @return A list of 5 elements:
 #' \itemize{
 #'   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
 #'   \item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
 #'   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
 #'   \item{The Bgee class object thta was used to retrieve the data.}
+#'   \item{The \code{call.file.type}, the kind of expression calls retrieved: "observed" or "propagated".}
 #' }
 #'
 #' @author Julien Roux, Julien Wollbrett
@@ -288,44 +289,70 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
-  ## Process the data and build the final list to return
+  ## Process the data and build the final list to return. The calls served by the Bgee releases
+  ## prior to 16 are made in the observed anatomical entities.
+  return(loadTopAnatDataFromFiles(
+    gene2conditionFile = file.path(myBgeeObject$pathToData, gene2anatomyFileName),
+    conditionNamesFile = file.path(myBgeeObject$pathToData, organNamesFileName),
+    conditionRelationsFile = file.path(myBgeeObject$pathToData, organRelationshipsFileName),
+    callFileType = "observed", myBgeeObject = myBgeeObject))
+}
+
+## Builds the list returned by loadTopAnatData from three files: the mapping of genes to the conditions
+## they are expressed in (columns GENE_ID, and CONDITION_ID from Bgee 16 or ANAT_ENTITY_ID before), the
+## names of the conditions (columns ID and NAME), and the relations between them (columns SOURCE_ID, a
+## condition, and TARGET_ID, one of its direct parents). Internal: loadTopAnatData downloads these files
+## and calls it, the topAnat web page calls it on its own files. callFileType is the kind of expression
+## calls of the files, "observed" or "propagated"; myBgeeObject the Bgee object they were retrieved with,
+## NULL for the files of the web page, which all come from Bgee 16 or later.
+loadTopAnatDataFromFiles <- function(gene2conditionFile, conditionNamesFile,
+                                     conditionRelationsFile, callFileType,
+                                     myBgeeObject = NULL){
+  if ( length(callFileType) != 1 || !callFileType %in% c("observed", "propagated") ){
+    stop("ERROR: the call file type must be \"observed\" or \"propagated\".")
+  }
   cat("\nParsing the results.............................................\n")
 
-  ## Relationships between organs
-  if (file.exists(file.path(myBgeeObject$pathToData, organRelationshipsFileName))){
-    if (file.info(file.path(myBgeeObject$pathToData, organRelationshipsFileName))$size != 0) {
-      tab <- read.table(file.path(myBgeeObject$pathToData, organRelationshipsFileName), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
+  ## Relationships between conditions
+  if (file.exists(conditionRelationsFile)){
+    if (file.info(conditionRelationsFile)$size != 0) {
+      tab <- read.table(conditionRelationsFile, header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
       organRelationships <- tapply(as.character(tab$TARGET_ID), as.character(tab$SOURCE_ID), unique)
     } else {
-      stop(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      stop(paste0("File ", conditionRelationsFile, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
     }
   } else {
-    stop(paste0("File ", organRelationshipsFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    stop(paste0("File ", conditionRelationsFile, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
   }
-  ## Organ names
-  if (file.exists(file.path(myBgeeObject$pathToData, organNamesFileName))){
-    if (file.info(file.path(myBgeeObject$pathToData, organNamesFileName))$size != 0) {
-      organNames <- read.table(file.path(myBgeeObject$pathToData, organNamesFileName), header=TRUE, sep="\t", comment.char="", blank.lines.skip=TRUE, as.is=TRUE, quote = "")
+  ## Condition names
+  if (file.exists(conditionNamesFile)){
+    if (file.info(conditionNamesFile)$size != 0) {
+      organNames <- read.table(conditionNamesFile, header=TRUE, sep="\t", comment.char="", blank.lines.skip=TRUE, as.is=TRUE, quote = "")
+      ## Only the ID and the name, in that order, the file can hold other columns
+      organNames <- organNames[, c("ID", "NAME")]
     } else {
-      stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      stop(paste0("File ", conditionNamesFile, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
     }
   } else {
-    stop(paste0("File ", organNamesFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    stop(paste0("File ", conditionNamesFile, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
   }
-  ## Mapping of genes to tissues
-  if (file.exists(file.path(myBgeeObject$pathToData, gene2anatomyFileName))){
-    if (file.info(file.path(myBgeeObject$pathToData, gene2anatomyFileName))$size != 0) {
-      tab <- read.table(file.path(myBgeeObject$pathToData, gene2anatomyFileName), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
+  ## Mapping of genes to conditions
+  if (file.exists(gene2conditionFile)){
+    if (file.info(gene2conditionFile)$size != 0) {
+      tab <- read.table(gene2conditionFile, header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
       if(length(tab$GENE_ID) != 0){
-        gene2anatomy <- tapply(as.character(tab$ANAT_ENTITY_ID), as.character(tab$GENE_ID), unique)
+        ## The conditions are identified by a condition ID from Bgee 16, by an anatomical
+        ## entity ID before
+        conditionColumn <- if ("CONDITION_ID" %in% names(tab)) "CONDITION_ID" else "ANAT_ENTITY_ID"
+        gene2anatomy <- tapply(as.character(tab[[conditionColumn]]), as.character(tab$GENE_ID), unique)
       } else {
         stop("There was no mapping of genes to anatomical structures found. Probably the parameters are too stringent, or this data type is absent in this species. See listBgeeSpecies() for data types availability.")
       }
     } else {
-      stop(paste0("File ", gene2anatomyFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
+      stop(paste0("File ", gene2conditionFile, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
     }
   } else {
-    stop(paste0("File ", gene2anatomyFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
+    stop(paste0("File ", gene2conditionFile, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
 
   cat("\nAdding BGEE:0 as unique root of all terms of the ontology.......\n")
@@ -350,5 +377,5 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   }
 
   cat("\nDone.\n")
-  return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames, bgee.object = myBgeeObject))
+  return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames, bgee.object = myBgeeObject, call.file.type = callFileType))
 }
