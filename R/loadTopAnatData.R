@@ -130,10 +130,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
                         error = function(e) 1)
 
     if (success == 0){
-      ## Read 5 last lines of file: should be empty indicating success of data transmission
-      ## We cannot use a system call to UNIX command since some user might be on Windows
-      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
-      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+      ## The 5 blank lines ending a response tell a complete transfer
+      if (.isCompleteResponse(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))) {
         ## The file transfer was successful, we rename the temporary file
         file.rename(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName))
       } else {
@@ -177,10 +175,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
                         error = function(e) 1)
 
     if (success == 0){
-      ## Read 5 last lines of file: should be empty indicating success of data transmission
-      ## We cannot use a system call to UNIX command since some user might be on Windows
-      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE, quote = ""), n=5)
-      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+      ## The 5 blank lines ending a response tell a complete transfer
+      if (.isCompleteResponse(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))) {
         ## The file transfer was successful, we rename the temporary file
         file.rename(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", organNamesFileName))
       } else {
@@ -265,7 +261,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   if ( callFilesAvailable ){
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(callFileType))
   }
-  gene2anatomyFileName <- paste0(gene2anatomyFileName, ".tsv")
+  ## From Bgee 16, the calls are kept as the API sends them, compressed
+  gene2anatomyFileName <- paste0(gene2anatomyFileName, if ( callFilesAvailable ) ".tsv.gz" else ".tsv")
 
   ## Check if file is already in cache
   if (file.exists(file.path(myBgeeObject$pathToData, gene2anatomyFileName))){
@@ -338,8 +335,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       )
     }
 
-    tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
-    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+    ## The 5 blank lines ending a response tell a complete transfer
+    if (.isCompleteResponse(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))) {
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
     } else {
@@ -399,7 +396,8 @@ loadTopAnatDataFromFiles <- function(gene2conditionFile, conditionNamesFile,
   ## Mapping of genes to conditions
   if (file.exists(gene2conditionFile)){
     if (file.info(gene2conditionFile)$size != 0) {
-      tab <- read.table(gene2conditionFile, header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
+      ## Every column read as character, so that no ID is ever converted into a number
+      tab <- fread(gene2conditionFile, sep="\t", header=TRUE, colClasses="character", data.table=FALSE, showProgress=FALSE)
       if(length(tab$GENE_ID) != 0){
         ## The conditions are identified by a condition ID from Bgee 16, by an anatomical
         ## entity ID before
