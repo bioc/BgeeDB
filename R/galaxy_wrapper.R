@@ -260,7 +260,9 @@ topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = N
   myTopAnatObject <- NULL
   tryCatch(
     {
-      myTopAnatObject <- topAnat(topAnatData = myTopAnatData, geneList = geneList, nodeSize = nodeSize)
+      ## The background is the gene list itself, without the default background of topAnat
+      myTopAnatObject <- topAnat(topAnatData = myTopAnatData, geneList = geneList, nodeSize = nodeSize,
+                                 background = backgroundGenes)
     },
     error = function(e) {
       stop("Did not manage to run topAnat. You probably did not provide proper gene list. ",

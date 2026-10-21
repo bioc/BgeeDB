@@ -296,6 +296,16 @@ tableClassic <- makeTable(myPropagatedData, myPropagatedObject, resultsClassic, 
 head(tableClassic)
 ```
 
+From Bgee 16, ```topAnat``` also restricts the gene list to a background, by default the protein coding genes, downloaded from Bgee. The ```background``` argument chooses another background: "polyA" for the genes of the biotypes captured by polyA RNA-Seq, "observed" for the genes with at least one observation of expression, or a vector of gene IDs; the gene IDs of the gene list itself keep it whole. The previous releases are not concerned. Instead of a gene list, the ```foregroundGenes``` argument takes the genes of interest alone: the gene list is then built from the background.
+
+```{r, eval=FALSE}
+## Not run in this vignette, built on Bgee 15.2
+# The genes of the biotypes captured by polyA RNA-Seq as background
+myPolyAObject <- topAnat(myPropagatedData, geneList, background = "polyA")
+# The genes of interest alone, compared to the protein coding genes with expression data, the default background
+myForegroundObject <- topAnat(myPropagatedData, foregroundGenes = myGenes)
+```
+
 #### Store expression data localy
 
 Since version 2.14.0 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database.

@@ -7,6 +7,8 @@
     \item New argument callFileType of loadTopAnatData: the expression calls propagated by Bgee, default from Bgee 16, or the observed ones, that topGO propagates
     \item From Bgee 16, the classic Fisher test, without decorrelation, runs on the propagated calls: BgeeDB computes it itself, without topGO, that would propagate them again, with the same counts and p-values as the classic algorithm of topGO, in seconds rather than minutes for the species with many conditions. termStat, genesInTerm, sigGenes, makeTable and printTopAnatGraph work on its object. The decorrelation algorithms run on the observed calls. Any other combination throws an error
     \item From Bgee 16, topAnat_galaxy runs the classic algorithm on the propagated calls
+    \item From Bgee 16, new argument background of topAnat: the gene list is restricted by default to the protein coding genes, downloaded from Bgee; "polyA", "observed" or a vector of gene IDs choose another background. The previous releases are not concerned
+    \item New argument foregroundGenes of topAnat, to provide the genes of interest alone instead of a gene list: the gene list is built from the background
     \item From Bgee 16, a Bgee object created without any data type uses the data types of the release
     \item New function printTopAnatGraph, drawing in a PDF file the conditions significant in a topAnat analysis and their ancestors, with their names
     \item loadTopAnatData reports the answer of the server when it refuses a query

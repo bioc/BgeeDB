@@ -15,7 +15,14 @@
 \alias{show,topAnatPropagatedData-method}
 \title{Produces an object allowing to perform GO-like enrichment of anatomical terms}
 \usage{
-topAnat(topAnatData, geneList, nodeSize = 10, ...)
+topAnat(
+  topAnatData,
+  geneList = NULL,
+  nodeSize = 10,
+  ...,
+  background = NULL,
+  foregroundGenes = NULL
+)
 
 \S4method{runTest}{topAnatData,character,character}(object, algorithm, statistic, ...)
 
@@ -40,11 +47,15 @@ topAnat(topAnatData, geneList, nodeSize = 10, ...)
 \arguments{
 \item{topAnatData}{a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame, produced by the function loadTopAnatData().}
 
-\item{geneList}{Vector indicating foreground and background genes. Names of the vector indicate the background genes. Values are 1 (gene in foreground) or 0 (gene not in foreground).}
+\item{geneList}{Vector indicating foreground and background genes. Names of the vector indicate the background genes. Values are 1 (gene in foreground) or 0 (gene not in foreground). Either geneList or foregroundGenes must be provided.}
 
 \item{nodeSize}{Minimum number of genes mapped to a node for it to be tested. Default is 10.}
 
 \item{...}{Additional parameters as passed to build topGOdata object in topGO package, for the observed calls.}
+
+\item{background}{The background of the analysis. With geneList, the gene list is restricted to its genes, the foreground genes outside of it being left out; with foregroundGenes, its genes with expression data are compared to the genes of interest. From Bgee 16, "protein_coding" for the protein coding genes, "polyA" for the genes of the biotypes captured by polyA RNA-Seq, or "observed" for the genes with at least one observation of expression, downloaded from Bgee; or a vector of gene IDs, for a custom background. Default is NULL: "protein_coding" from Bgee 16; for the previous releases and for data built without a Bgee object, no restriction of geneList, and all the genes with expression data for foregroundGenes.}
+
+\item{foregroundGenes}{The IDs of the genes of interest, to provide instead of geneList: the gene list is then built from the background, its genes of interest in the foreground. Either geneList or foregroundGenes must be provided.}
 
 \item{object}{A topAnatObject, produced by the function \code{topAnat}.}
 

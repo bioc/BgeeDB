@@ -15,11 +15,15 @@
 #'
 #' @param topAnatData a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame, produced by the function loadTopAnatData().
 #'
-#' @param geneList Vector indicating foreground and background genes. Names of the vector indicate the background genes. Values are 1 (gene in foreground) or 0 (gene not in foreground).
+#' @param geneList Vector indicating foreground and background genes. Names of the vector indicate the background genes. Values are 1 (gene in foreground) or 0 (gene not in foreground). Either geneList or foregroundGenes must be provided.
 #'
 #' @param nodeSize Minimum number of genes mapped to a node for it to be tested. Default is 10.
 #'
 #' @param ... Additional parameters as passed to build topGOdata object in topGO package, for the observed calls.
+#'
+#' @param background The background of the analysis. With geneList, the gene list is restricted to its genes, the foreground genes outside of it being left out; with foregroundGenes, its genes with expression data are compared to the genes of interest. From Bgee 16, "protein_coding" for the protein coding genes, "polyA" for the genes of the biotypes captured by polyA RNA-Seq, or "observed" for the genes with at least one observation of expression, downloaded from Bgee; or a vector of gene IDs, for a custom background. Default is NULL: "protein_coding" from Bgee 16; for the previous releases and for data built without a Bgee object, no restriction of geneList, and all the genes with expression data for foregroundGenes.
+#'
+#' @param foregroundGenes The IDs of the genes of interest, to provide instead of geneList: the gene list is then built from the background, its genes of interest in the foreground. Either geneList or foregroundGenes must be provided.
 #'
 #' @return topAnatObject: on the expression calls propagated by Bgee, a topAnatPropagatedData class object, ready for the classic Fisher test of \code{runTest}; on the observed calls, a topAnatData class object, ready for gene set enrichment testing with topGO.
 #'
@@ -69,7 +73,7 @@
 #' @import topGO graph
 #' @export
 
-topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
+topAnat <- function(topAnatData, geneList = NULL, nodeSize = 10, ..., background = NULL, foregroundGenes = NULL){
 
   ## Test if topAnatData not empty
   cat("\nChecking topAnatData object.............\n")
@@ -100,15 +104,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
   ## Test if gene list is fine
   cat("\nChecking gene list......................\n")
-  if (!is.factor(geneList)){
-    geneList <- as.factor(geneList)
-  }
-  if (length(geneList) == 0){
-    stop("ERROR: the gene list provided is empty.")
-  }
-  if (length(levels(geneList)) != 2){
-    stop("ERROR: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
-  }
+  geneList <- .buildTopAnatGeneList(topAnatData, geneList, foregroundGenes, background, propagatedCallsAvailable)
   if (length(geneList) < 100) {
     cat("\nWARNING: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
   }
@@ -171,4 +167,155 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   }
 
   return(topAnatObject)
+}
+
+#' Build the gene list of a topAnat analysis
+#'
+#' Builds the gene list of topGO: a factor with the levels "0" and "1", named by the IDs of the genes of the universe
+#' of the analysis, 1 marking the foreground genes. It is built in one of two ways:
+#' \itemize{
+#'   \item from the gene list given by the user (\code{geneList}): its names are the universe, restricted to the genes
+#'   of the background when there is one, the foreground genes outside of it being left out;
+#'   \item from the genes of interest given by the user (\code{foregroundGenes}): the universe is then the genes of the
+#'   background with expression data in \code{topAnatData}, or all the genes with expression data when there is no
+#'   background, the genes of interest in the foreground.
+#' }
+#' The background is resolved by \code{.topAnatBackgroundGenes}. A message tells the background, and how many genes
+#' and genes of interest are kept.
+#'
+#' @param topAnatData The list produced by \code{loadTopAnatData}, or built from local files by
+#' \code{loadTopAnatDataFromFiles}.
+#' @param geneList NULL, or the gene list given by the user: a vector of 0 and 1 named by the IDs of the genes.
+#' @param foregroundGenes NULL, or the IDs of the genes of interest given by the user. Exactly one of \code{geneList}
+#' and \code{foregroundGenes} must be given.
+#' @param background The \code{background} argument of \code{topAnat}: NULL, a type of background, or gene IDs.
+#' @param propagatedCallsAvailable Whether the release of \code{topAnatData} is Bgee 16 or later.
+#' @return The gene list: a factor with the levels "0" and "1", named by gene IDs.
+#' @noRd
+.buildTopAnatGeneList <- function(topAnatData, geneList, foregroundGenes, background, propagatedCallsAvailable) {
+  if ( is.null(geneList) == is.null(foregroundGenes) ){
+    stop("ERROR: please provide either a gene list (geneList) or the genes of interest (foregroundGenes), not both.")
+  }
+  backgroundGenes <- .topAnatBackgroundGenes(topAnatData, background, propagatedCallsAvailable)
+
+  ## From the genes of interest: the universe is the background, restricted to the genes with expression data
+  if ( !is.null(foregroundGenes) ){
+    foregroundGenes <- unique(as.character(foregroundGenes))
+    if ( length(foregroundGenes) == 0 ){
+      stop("ERROR: the list of genes of interest provided is empty.")
+    }
+    universe <- names(topAnatData$gene2anatomy)
+    if ( !is.null(backgroundGenes) ){
+      universe <- intersect(universe, backgroundGenes$genes)
+    }
+    inUniverse <- foregroundGenes %in% universe
+    message("NOTE: the background is ", if ( is.null(backgroundGenes) ) "all the genes" else backgroundGenes$name,
+            " with expression data: ", length(universe), " genes, with ", sum(inUniverse), " of the ",
+            length(foregroundGenes), " genes of interest.")
+    if ( !any(inUniverse) ){
+      stop("ERROR: none of the genes of interest is in the background with expression data.")
+    }
+    geneList <- factor(as.integer(universe %in% foregroundGenes), levels = c(0, 1))
+    names(geneList) <- universe
+    return(geneList)
+  }
+
+  ## From the gene list of the user: its names are the universe, restricted to the background
+  if ( !is.factor(geneList) ){
+    geneList <- as.factor(geneList)
+  }
+  if ( length(geneList) == 0 ){
+    stop("ERROR: the gene list provided is empty.")
+  }
+  if ( length(levels(geneList)) != 2 || is.null(names(geneList)) ){
+    stop("ERROR: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
+  }
+  if ( !is.null(backgroundGenes) ){
+    inBackground <- names(geneList) %in% backgroundGenes$genes
+    foreground <- as.logical(as.integer(levels(geneList)))[geneList]
+    message("NOTE: the background is ", backgroundGenes$name, ": ", sum(inBackground), " of the ", length(geneList),
+            " genes of the gene list are kept, ", sum(foreground & !inBackground), " of its ", sum(foreground),
+            " foreground genes are left out.")
+    if ( !any(foreground & inBackground) ){
+      stop("ERROR: none of the foreground genes is in the background.")
+    }
+    geneList <- geneList[inBackground]
+  }
+  geneList
+}
+
+#' Resolve the background of a topAnat analysis
+#'
+#' Resolves the \code{background} argument of \code{topAnat} into the IDs of the genes of the background:
+#' \itemize{
+#'   \item NULL: the "protein_coding" background from Bgee 16 with a Bgee object; otherwise no background, for the
+#'   previous releases and for data built from local files without a Bgee object;
+#'   \item "protein_coding", "polyA" or "observed": downloaded from Bgee by \code{.loadTopAnatBackground}, which needs
+#'   a Bgee object and Bgee 16 or later;
+#'   \item any other vector: the IDs of the genes of a custom background.
+#' }
+#'
+#' @param topAnatData The list produced by \code{loadTopAnatData}, or built from local files by
+#' \code{loadTopAnatDataFromFiles}.
+#' @param background The \code{background} argument of \code{topAnat}.
+#' @param propagatedCallsAvailable Whether the release of \code{topAnatData} is Bgee 16 or later.
+#' @return NULL when there is no background; otherwise a list with \code{genes}, the IDs of the genes of the
+#' background, and \code{name}, its description for the messages.
+#' @noRd
+.topAnatBackgroundGenes <- function(topAnatData, background, propagatedCallsAvailable) {
+  if ( is.null(background) && !is.null(topAnatData$bgee.object$release) && propagatedCallsAvailable ){
+    background <- "protein_coding"
+  }
+  if ( is.null(background) ){
+    return(NULL)
+  }
+  if ( length(background) == 1 && background %in% c("protein_coding", "polyA", "observed") ){
+    if ( is.null(topAnatData$bgee.object$release) ){
+      stop("ERROR: the background \"", background, "\" is downloaded from Bgee, which needs a Bgee object: ",
+           "please provide the IDs of the genes of the background.")
+    }
+    if ( !propagatedCallsAvailable ){
+      stop("ERROR: the background \"", background, "\" is available from Bgee 16: ",
+           "please provide the IDs of the genes of the background.")
+    }
+    return(list(genes = .loadTopAnatBackground(topAnatData$bgee.object, background),
+                name = paste0("the \"", background, "\" genes of Bgee")))
+  }
+  list(genes = unique(as.character(background)), name = "the genes provided")
+}
+
+## The genes of a background of topAnat, from Bgee 16: downloaded from the Bgee API, and kept in the download
+## directory as the other files of topAnat
+.loadTopAnatBackground <- function(myBgeeObject, background) {
+  backgroundFileName <- paste0("topAnat_Background_", myBgeeObject$speciesId, "_", toupper(background), ".tsv")
+  backgroundFile <- file.path(myBgeeObject$pathToData, backgroundFileName)
+  if (file.exists(backgroundFile)) {
+    cat(paste0("\nNOTE: a background file was found in the download directory ", myBgeeObject$pathToData,
+               ". Data will not be redownloaded.\n"))
+  } else {
+    myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=r_package&action=get_background_genes&display_type=tsv&species_list=",
+                    myBgeeObject$speciesId, "&background_type=", background, "&api_key=", myBgeeObject$apiKey,
+                    "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    cat(paste0("\nRetrieving the genes of the background from Bgee (", myUrl, ")\n"))
+    ## A query refused by the server makes download.file warn and fail without saying why: the answer of the server
+    ## is then retrieved below
+    success <- tryCatch(suppressWarnings(bgee_download_file(url = myUrl, destfile = paste0(backgroundFile, ".tmp"))),
+                        error = function(e) 1)
+    if (success != 0) {
+      unlink(paste0(backgroundFile, ".tmp"))
+      serverAnswer <- try(getURL(myUrl), silent = TRUE)
+      if (inherits(serverAnswer, "try-error")) {
+        stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
+      }
+      stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n",
+                  trimws(serverAnswer)))
+    }
+    ## The 5 blank lines ending a response tell a complete transfer
+    if (!.isCompleteResponse(paste0(backgroundFile, ".tmp"))) {
+      file.remove(paste0(backgroundFile, ".tmp"))
+      stop(paste0("File ", backgroundFileName, " is truncated, there may be a temporary problem with the Bgee webservice."))
+    }
+    file.rename(paste0(backgroundFile, ".tmp"), backgroundFile)
+  }
+  read.table(backgroundFile, header = TRUE, sep = "\t", quote = "", comment.char = "", colClasses = "character")$GENE_ID
 }
