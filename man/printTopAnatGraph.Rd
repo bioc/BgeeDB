@@ -16,9 +16,9 @@ printTopAnatGraph(
 \arguments{
 \item{topAnatData}{A list produced by the function \code{loadTopAnatData}.}
 
-\item{topAnatObject}{A topAnatData class object, produced by the function \code{topAnat}.}
+\item{topAnatObject}{A topAnatObject, produced by the function \code{topAnat}.}
 
-\item{results}{A topGOresult object, produced by the function \code{runTest} of topGO.}
+\item{results}{A topGOresult object, produced by the function \code{runTest}.}
 
 \item{firstSigNodes}{Number of most significant conditions to draw, with their ancestors. Default is 10.}
 

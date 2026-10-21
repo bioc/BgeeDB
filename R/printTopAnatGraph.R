@@ -6,9 +6,9 @@
 #'
 #' @param topAnatData A list produced by the function \code{loadTopAnatData}.
 #'
-#' @param topAnatObject A topAnatData class object, produced by the function \code{topAnat}.
+#' @param topAnatObject A topAnatObject, produced by the function \code{topAnat}.
 #'
-#' @param results A topGOresult object, produced by the function \code{runTest} of topGO.
+#' @param results A topGOresult object, produced by the function \code{runTest}.
 #'
 #' @param firstSigNodes Number of most significant conditions to draw, with their ancestors. Default is 10.
 #'

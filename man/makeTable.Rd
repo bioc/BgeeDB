@@ -11,7 +11,7 @@ makeTable(topAnatData, topAnatObject, results, cutoff = 1, ordering = 7)
 
 \item{topAnatObject}{An object produced by the function topAnat().}
 
-\item{results}{A result object, produced by the runtest() function of topGO.}
+\item{results}{A topGOresult object, produced by the function runTest.}
 
 \item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
 Default is 1, meaning that all terms are included.}
@@ -22,7 +22,7 @@ Default is 1, meaning that all terms are included.}
 A data frame with significantly enriched anatomical structures, sorted by p-value.
 }
 \description{
-This function loads the results from the topGO test and creates an output table with organ names,
+This function loads the results of the enrichment test and creates an output table with organ names,
 fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
 }
 \examples{

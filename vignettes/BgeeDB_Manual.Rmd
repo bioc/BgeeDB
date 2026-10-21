@@ -282,7 +282,7 @@ printTopAnatGraph(myTopAnatData, myTopAnatObject, results, firstSigNodes = 5, fi
 
 #### Test the propagated calls without decorrelation
 
-From Bgee 16, the analysis without decorrelation, run with the classic algorithm of ```topGO```, tests the expression calls propagated by Bgee, that ```topGO``` does not propagate again: it is the test the TopAnat web page runs when no decorrelation method is requested.
+From Bgee 16, the analysis without decorrelation is the classic Fisher test on the expression calls propagated by Bgee: it is the test the TopAnat web page runs when no decorrelation method is requested. BgeeDB computes it itself, without ```topGO```, that would propagate these calls again: the counts and the p-values are those of the classic algorithm of ```topGO```, much faster for the species with many conditions. The ```termStat```, ```genesInTerm``` and ```sigGenes``` functions shown above, ```makeTable``` and ```printTopAnatGraph``` work on its object.
 
 ```{r, eval=FALSE}
 ## Not run in this vignette, built on Bgee 15.2
@@ -290,7 +290,7 @@ bgee16 <- Bgee$new(species = "Danio_rerio", release = "16.0")
 # Loading the expression calls propagated by Bgee, the default from Bgee 16
 myPropagatedData <- loadTopAnatData(bgee16)
 myPropagatedObject <- topAnat(myPropagatedData, geneList)
-# The classic algorithm, the only one run on the propagated calls
+# The classic Fisher test, the only one run on the propagated calls
 resultsClassic <- runTest(myPropagatedObject, algorithm = 'classic', statistic = 'fisher')
 tableClassic <- makeTable(myPropagatedData, myPropagatedObject, resultsClassic, cutoff = 0.01)
 head(tableClassic)

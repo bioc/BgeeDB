@@ -1,13 +1,13 @@
 #' @title Formats results of the enrichment test on anatomical structures.
 #'
-#' @description This function loads the results from the topGO test and creates an output table with organ names,
+#' @description This function loads the results of the enrichment test and creates an output table with organ names,
 #' fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
 #'
 #' @param topAnatData A list produced by the function loadTopAnatData().
 #'
 #' @param topAnatObject An object produced by the function topAnat().
 #'
-#' @param results A result object, produced by the runtest() function of topGO.
+#' @param results A topGOresult object, produced by the function runTest.
 #'
 #' @param cutoff An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
 #' Default is 1, meaning that all terms are included.

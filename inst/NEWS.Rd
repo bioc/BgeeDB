@@ -5,7 +5,7 @@
   \itemize{
     \item topAnat can use the expression calls of Bgee 16. These calls are made in anatomical structures possibly restricted to a cell type
     \item New argument callFileType of loadTopAnatData: the expression calls propagated by Bgee, default from Bgee 16, or the observed ones, that topGO propagates
-    \item From Bgee 16, the classic algorithm of topGO, without decorrelation, runs on the propagated calls, that topGO does not propagate again. The decorrelation algorithms on the observed calls. Any other combination throws an error
+    \item From Bgee 16, the classic Fisher test, without decorrelation, runs on the propagated calls: BgeeDB computes it itself, without topGO, that would propagate them again, with the same counts and p-values as the classic algorithm of topGO, in seconds rather than minutes for the species with many conditions. termStat, genesInTerm, sigGenes, makeTable and printTopAnatGraph work on its object. The decorrelation algorithms run on the observed calls. Any other combination throws an error
     \item From Bgee 16, topAnat_galaxy runs the classic algorithm on the propagated calls
     \item From Bgee 16, a Bgee object created without any data type uses the data types of the release
     \item New function printTopAnatGraph, drawing in a PDF file the conditions significant in a topAnat analysis and their ancestors, with their names

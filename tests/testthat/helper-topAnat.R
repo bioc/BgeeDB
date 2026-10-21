@@ -5,8 +5,9 @@
 smallTopAnatData <- function(callFileType, bgeeObject = NULL) {
   genes <- paste0("G", 1:20)
   conditions <- list(A = genes[1:10], B = genes[6:15], C = genes[c(1:3, 16)])
-  gene2anatomy <- lapply(genes, function(g) c("R", names(conditions)[sapply(conditions, function(c) g %in% c)]))
-  names(gene2anatomy) <- genes
+  geneConditions <- lapply(genes, function(g) c("R", names(conditions)[sapply(conditions, function(c) g %in% c)]))
+  ## Built with tapply as loadTopAnatData builds it, an array
+  gene2anatomy <- tapply(unlist(geneConditions), rep(genes, lengths(geneConditions)), unique)
   list(gene2anatomy = gene2anatomy,
        organ.relationships = list(A = "R", B = "R", C = "A", R = "BGEE:0"),
        organ.names = data.frame(ID = c("R", "A", "B", "C", "BGEE:0"),
