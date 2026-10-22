@@ -57,7 +57,7 @@
 #'                      "ENSBTAG00000045757","ENSBTAG00000046332","ENSBTAG00000046332",
 #'                      "ENSBTAG00000008394")
 #' myTopAnatObject <-  topAnat(myTopAnatData, geneList)
-#' resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
+#' resFis <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 #' ## Format results
 #' tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 #' }
