@@ -70,7 +70,12 @@ printTopAnatGraph <- function(topAnatData, topAnatObject, results, firstSigNodes
     suppressPackageStartupMessages(attachNamespace("Rgraphviz"))
     on.exit(detach("package:Rgraphviz"), add = TRUE)
   }
-  completeDag <- GOplot(dag, sigNodes = pValues[conditions], genNodes = names(sigTerms),
+  ## The colors follow the logarithm of the p-values: a p-value of 0, that the strongest enrichments
+  ## give, takes the color of the smallest p-value above 0
+  sigNodes <- pValues[conditions]
+  positive <- sigNodes[sigNodes > 0]
+  sigNodes[sigNodes == 0] <- if (length(positive) > 0) min(positive) else 1
+  completeDag <- GOplot(dag, sigNodes = sigNodes, genNodes = names(sigTerms),
                         wantedNodes = names(sigTerms), showEdges = TRUE, useFullNames = TRUE,
                         oldSigNodes = NULL, nodeInfo = nodeInfo)
   pdf(file = fileName, width = 25, height = 25)
