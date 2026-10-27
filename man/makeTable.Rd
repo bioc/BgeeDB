@@ -4,7 +4,14 @@
 \alias{makeTable}
 \title{Formats results of the enrichment test on anatomical structures.}
 \usage{
-makeTable(topAnatData, topAnatObject, results, cutoff = 1, ordering = 7)
+makeTable(
+  topAnatData,
+  topAnatObject,
+  results,
+  cutoff = 1,
+  ordering = 7,
+  keepRedundant = FALSE
+)
 }
 \arguments{
 \item{topAnatData}{A list produced by the function loadTopAnatData().}
@@ -17,13 +24,24 @@ makeTable(topAnatData, topAnatObject, results, cutoff = 1, ordering = 7)
 Default is 1, meaning that all terms are included.}
 
 \item{ordering}{A numeric indicating which column should be used to sort the data frame. If the column number is preceded by a \"-\" sign, results are displayed in decreasing ordering. Default is "7", returning data frame sorted by p-values in increasing order.}
+
+\item{keepRedundant}{A logical. FALSE (default) leaves out the terms redundant with a more precise one, see Details.
+TRUE keeps them, and adds a logical column redundant that tells which ones they are.}
 }
 \value{
-A data frame with significantly enriched anatomical structures, sorted by p-value.
+A data frame with significantly enriched anatomical structures, sorted by p-value, with the column redundant
+when keepRedundant is TRUE.
 }
 \description{
 This function loads the results of the enrichment test and creates an output table with organ names,
 fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
+By default, the terms redundant with a more precise one are left out.
+}
+\details{
+A term is redundant when one of its sub-terms, more precise by its anatomical entity or by its cell type,
+at any depth, has the same numbers of annotated and significant genes and the same p-value, hence the same FDR:
+its result repeats the one of the sub-term, and only the most precise of them is kept. The FDR is computed over
+all the terms tested, the redundant ones included.
 }
 \examples{
 {
@@ -65,7 +83,7 @@ names(geneList) <- c("ENSBTAG00000000011","ENSBTAG00000000014","ENSBTAG000000000
                      "ENSBTAG00000045757","ENSBTAG00000046332","ENSBTAG00000046332",
                      "ENSBTAG00000008394")
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
-resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
+resFis <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 ## Format results
 tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 }

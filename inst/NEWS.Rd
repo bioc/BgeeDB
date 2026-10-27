@@ -11,6 +11,7 @@
     \item New argument foregroundGenes of topAnat, to provide the genes of interest alone instead of a gene list: the gene list is built from the background
     \item From Bgee 16, a Bgee object created without any data type uses the data types of the release
     \item New function printTopAnatGraph, drawing in a PDF file the conditions significant in a topAnat analysis and their ancestors, with their names
+    \item makeTable and printTopAnatGraph leave out by default the conditions redundant with a more precise one: those with the numbers of annotated and significant genes and the p-value of one of their sub-conditions. New argument keepRedundant to keep them, makeTable then telling them in a column redundant
     \item loadTopAnatData reports the answer of the server when it refuses a query
     \item loadTopAnatData reads the expression calls faster and with less memory: with fread, and by checking that a download is complete from its last bytes rather than by reading it whole. From Bgee 16, the Bgee API sends the expression calls compressed, and they are kept compressed in the download directory, in a file ending with .tsv.gz
   }

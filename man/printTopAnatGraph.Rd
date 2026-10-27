@@ -10,7 +10,8 @@ printTopAnatGraph(
   results,
   firstSigNodes = 10,
   fileName = "topAnat_graph.pdf",
-  useInfo = c("all", "np", "def", "pval", "counts", "none")
+  useInfo = c("all", "np", "def", "pval", "counts", "none"),
+  keepRedundant = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ printTopAnatGraph(
 \item{fileName}{Path to the PDF file to write. Default is "topAnat_graph.pdf".}
 
 \item{useInfo}{The information written in each node: "all" (default), the name, the p-value and the numbers of significant and annotated genes; "np", the name and the p-value; "def", the name; "pval", the p-value; "counts", the numbers of genes; "none", only the ID.}
+
+\item{keepRedundant}{A logical. FALSE (default) leaves out of the most significant conditions those redundant with a more precise one, as \code{makeTable} does: their result repeats the one of one of their sub-conditions. They can still be drawn as the ancestors of other conditions. TRUE counts them among the most significant conditions.}
 }
 \value{
 The path to the PDF file, invisibly.

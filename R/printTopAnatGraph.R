@@ -16,6 +16,8 @@
 #'
 #' @param useInfo The information written in each node: "all" (default), the name, the p-value and the numbers of significant and annotated genes; "np", the name and the p-value; "def", the name; "pval", the p-value; "counts", the numbers of genes; "none", only the ID.
 #'
+#' @param keepRedundant A logical. FALSE (default) leaves out of the most significant conditions those redundant with a more precise one, as \code{makeTable} does: their result repeats the one of one of their sub-conditions. They can still be drawn as the ancestors of other conditions. TRUE counts them among the most significant conditions.
+#'
 #' @return The path to the PDF file, invisibly.
 #'
 #' @author Julien Wollbrett
@@ -36,18 +38,21 @@
 #' @export
 printTopAnatGraph <- function(topAnatData, topAnatObject, results, firstSigNodes = 10,
                               fileName = "topAnat_graph.pdf",
-                              useInfo = c("all", "np", "def", "pval", "counts", "none")){
+                              useInfo = c("all", "np", "def", "pval", "counts", "none"), keepRedundant = FALSE){
   if (!requireNamespace("Rgraphviz", quietly = TRUE)) {
     stop("ERROR: the Rgraphviz package is needed to draw the graph, please install it with BiocManager::install(\"Rgraphviz\").")
   }
   useInfo <- match.arg(useInfo)
+  if (!is.logical(keepRedundant) || length(keepRedundant) != 1 || is.na(keepRedundant)) {
+    stop("ERROR: keepRedundant must be TRUE or FALSE.")
+  }
   pValues <- score(results)
   if (length(pValues) == 0) {
     stop("ERROR: the results object is empty.")
   }
 
   ## The most significant conditions and all their ancestors, the root at the top
-  sigTerms <- sort(pValues)[seq_len(min(firstSigNodes, length(pValues)))]
+  sigTerms <- .mostSignificantConditions(topAnatData, topAnatObject, pValues, firstSigNodes, keepRedundant)
   dag <- reverseArch(inducedGraph(graph(topAnatObject), names(sigTerms)))
   conditions <- graph::nodes(dag)
 
@@ -84,4 +89,24 @@ printTopAnatGraph <- function(topAnatData, topAnatObject, results, firstSigNodes
   dev.off()
   cat(paste0("\nGraph of ", length(conditions), " conditions written in ", fileName, "\n"))
   return(invisible(fileName))
+}
+
+#' The most significant conditions of a topAnat analysis
+#'
+#' @param topAnatData The list produced by \code{loadTopAnatData}.
+#' @param topAnatObject The object produced by \code{topAnat}.
+#' @param pValues The p-values of the conditions tested, named by their IDs.
+#' @param firstSigNodes The number of conditions to return.
+#' @param keepRedundant FALSE to leave out the conditions redundant with a more precise one, see
+#' \code{.redundantConditions}.
+#' @return The p-values of the \code{firstSigNodes} most significant conditions, sorted, named by their IDs.
+#' @noRd
+.mostSignificantConditions <- function(topAnatData, topAnatObject, pValues, firstSigNodes, keepRedundant) {
+  candidates <- sort(pValues)
+  if (!keepRedundant) {
+    counts <- termStat(topAnatObject, names(candidates))[names(candidates), ]
+    candidates <- candidates[!.redundantConditions(names(candidates), counts$Annotated, counts$Significant,
+                                                   candidates, topAnatData$organ.relationships)]
+  }
+  candidates[seq_len(min(firstSigNodes, length(candidates)))]
 }

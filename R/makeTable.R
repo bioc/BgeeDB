@@ -2,6 +2,12 @@
 #'
 #' @description This function loads the results of the enrichment test and creates an output table with organ names,
 #' fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
+#' By default, the terms redundant with a more precise one are left out.
+#'
+#' @details A term is redundant when one of its sub-terms, more precise by its anatomical entity or by its cell type,
+#' at any depth, has the same numbers of annotated and significant genes and the same p-value, hence the same FDR:
+#' its result repeats the one of the sub-term, and only the most precise of them is kept. The FDR is computed over
+#' all the terms tested, the redundant ones included.
 #'
 #' @param topAnatData A list produced by the function loadTopAnatData().
 #'
@@ -14,7 +20,11 @@
 #'
 #' @param ordering A numeric indicating which column should be used to sort the data frame. If the column number is preceded by a \"-\" sign, results are displayed in decreasing ordering. Default is "7", returning data frame sorted by p-values in increasing order.
 #'
-#' @return A data frame with significantly enriched anatomical structures, sorted by p-value.
+#' @param keepRedundant A logical. FALSE (default) leaves out the terms redundant with a more precise one, see Details.
+#' TRUE keeps them, and adds a logical column redundant that tells which ones they are.
+#'
+#' @return A data frame with significantly enriched anatomical structures, sorted by p-value, with the column redundant
+#' when keepRedundant is TRUE.
 #'
 #' @author Julien Roux
 #'
@@ -64,10 +74,13 @@
 #' @import stats
 #' @export
 
-makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7){
+makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7, keepRedundant=FALSE){
   ## Perform some checks on the input data
   if(any(is.na(score(results))) || length(score(results)) == 0){
     stop("ERROR: the results object is empty.")
+  }
+  if (!is.logical(keepRedundant) || length(keepRedundant) != 1 || is.na(keepRedundant)) {
+    stop("ERROR: keepRedundant must be TRUE or FALSE.")
   }
   if (!is.numeric(cutoff)){
     cutoff <- as.numeric(cutoff)
@@ -125,10 +138,62 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7)
     ## remove arbitrary numbers that are used as row names
     row.names(topTable) <- topTable$organId
 
+    redundant <- .redundantConditions(topTable$organId, topTable$annotated, topTable$significant, topTable$pValue,
+                                      topAnatData$organ.relationships)
+    if (keepRedundant) {
+      topTable$redundant <- redundant
+    } else if (any(redundant)) {
+      cat(paste0("Leaving out the ", sum(redundant), " terms redundant with a more precise one...\n"))
+      topTable <- topTable[!redundant, ]
+    }
+
     cat("Done\n\n")
     return(topTable)
   } else {
     cat("\nWARNING: there was no significant term at FDR threshold of", cutoff, "\n\n")
     return(NA)
   }
+}
+
+#' Identify the conditions redundant with a more precise one
+#'
+#' A condition is redundant when one of its sub-conditions, at any depth, has the same numbers of annotated and
+#' significant genes and the same p-value: its result repeats the one of the sub-condition. The p-value is compared
+#' along with the counts because the decorrelation algorithms of topGO can give different p-values to conditions with
+#' the same counts. The sub-conditions are searched through the whole graph of the conditions, whatever the results
+#' of the conditions between them.
+#'
+#' @param ids The IDs of the conditions.
+#' @param annotated The numbers of annotated genes of the conditions, in the order of \code{ids}.
+#' @param significant Their numbers of significant genes.
+#' @param pValues Their p-values.
+#' @param relationships The relations between the conditions, as the element organ.relationships of the list
+#' produced by \code{loadTopAnatData}: a list named by the IDs of conditions, holding the IDs of their parents.
+#' @return A logical vector, TRUE for the conditions of \code{ids} redundant with another one of them.
+#' @noRd
+.redundantConditions <- function(ids, annotated, significant, pValues, relationships) {
+  redundant <- logical(length(ids))
+  result <- paste(annotated, significant, pValues)
+  ## Only the conditions sharing their result with another one can be redundant
+  shared <- result %in% result[duplicated(result)]
+  if (!any(shared)) {
+    return(redundant)
+  }
+  ## The graph as indexes of its conditions, each condition pointing to its parents
+  conditions <- unique(c(ids, names(relationships), unlist(relationships, use.names = FALSE)))
+  parents <- lapply(relationships[conditions], match, conditions)
+  ## A condition sharing a result is redundant when it is an ancestor of another condition with that result:
+  ## the ancestors of all the conditions with the same result are walked at once, the graph having no cycle
+  for (group in split(which(shared), result[shared])) {
+    members <- match(ids[group], conditions)
+    reached <- logical(length(conditions))
+    frontier <- unlist(parents[members], use.names = FALSE)
+    while (length(frontier) > 0) {
+      frontier <- unique(frontier[!reached[frontier]])
+      reached[frontier] <- TRUE
+      frontier <- unlist(parents[frontier], use.names = FALSE)
+    }
+    redundant[group] <- reached[members]
+  }
+  redundant
 }
