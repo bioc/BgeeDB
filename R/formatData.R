@@ -37,7 +37,7 @@
 #' }
 #'
 #' @importFrom dplyr %>%
-#' @importFrom tidyr spread_
+#' @importFrom tidyr spread all_of
 #' @export
 
 formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
@@ -144,7 +144,7 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
                      ## subset the data to keep relevant columns
                      xt <- x[, columns[1:3]]
                      ## from sample and feature columns, create a matrix with features as rows and samples as columns
-                     xtt <- xt %>% spread_(columns[1], columns[3])
+                     xtt <- xt %>% spread(key = all_of(columns[1]), value = all_of(columns[3]))
                      rownames(xtt) <- xtt[, columns[2]]
                      ## Remove feature column to keep only data
                      xtt[,-1, drop = FALSE]
@@ -159,7 +159,7 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     calls <- .calling(data, callType, columns[3])
     ## subset the data to keep relevant columns
     xt <- calls[, columns[1:3]]
-    xtt <- xt %>% spread_(columns[1], columns[3])
+    xtt <- xt %>% spread(key = all_of(columns[1]), value = all_of(columns[3]))
     rownames(xtt) <- xtt[, columns[2]]
     ## Remove feature column to keep only data
     expr <- xtt[,-1, drop = FALSE]
