@@ -40,13 +40,16 @@ The graph is drawn with the topGO package, and needs the Rgraphviz package, to i
 }
 \examples{
 {
-\dontrun{
-  bgee <- Bgee$new(species = "Danio_rerio", release = "15.2")
-  myTopAnatData <- loadTopAnatData(bgee)
-  data(geneList)
-  myTopAnatObject <- topAnat(myTopAnatData, geneList)
-  results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
-  printTopAnatGraph(myTopAnatData, myTopAnatObject, results, firstSigNodes = 5)
+\donttest{
+  if (requireNamespace("Rgraphviz", quietly = TRUE)) {
+    bgee <- Bgee$new(species = "Danio_rerio", release = "15.2")
+    myTopAnatData <- loadTopAnatData(bgee)
+    data(geneList)
+    myTopAnatObject <- topAnat(myTopAnatData, geneList)
+    results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
+    printTopAnatGraph(myTopAnatData, myTopAnatObject, results, firstSigNodes = 5,
+                      fileName = tempfile(fileext = ".pdf"))
+  }
 }
 }
 

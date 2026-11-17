@@ -27,9 +27,9 @@ These files are stored in the H5AD format.
 }
 \examples{
 {
-\dontrun{
-  bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
-  cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132576")
+\donttest{
+  bgee <- Bgee$new(species = "Homo_sapiens", dataType = "sc_full_length")
+  cellProcessedData <- getCellProcessedData(bgee, experimentId = "SRP050499")
 }
 }
 
