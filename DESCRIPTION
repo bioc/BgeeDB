@@ -8,9 +8,13 @@ Authors@R: c(
     person("Julien", "Roux", email = "julien.roux@unibas.ch", role = "aut"),
     person("Andrea", "Komljenovic", email = "andreakomljenovic@gmail.com", role = "aut"),
     person("Frederic", "Bastian", email = "bgee@sib.swiss", role = "aut"))
-Description: A package for the annotation and gene expression
-    data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms,
-    mapped to genes by expression patterns.
+Description: BgeeDB gives access to the Bgee database (<https://www.bgee.org>), a curated
+    resource of gene expression integrating bulk and single-cell RNA-seq, Affymetrix
+    microarray, EST and in situ hybridization data. The package downloads the annotation of
+    experiments and samples, the processed expression values at the sample or single-cell level
+    and the integrated expression calls, and formats expression data as Bioconductor ExpressionSet
+    objects. It also implements TopAnat, a GO-like enrichment analysis of anatomical terms from the
+    UBERON ontology, mapped to genes by their expression patterns.
 Encoding: UTF-8
 Depends: R (>= 3.6.0), topGO, tidyr
 Imports: R.utils, data.table, curl, RCurl, digest, methods, stats, utils, dplyr, RSQLite,
