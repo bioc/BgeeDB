@@ -29,6 +29,9 @@
 #' @export
 #' 
 getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
+  if (length(package) != 1 || ! package %in% c("anndata", "zellkonverter")) {
+    stop("the R package used to load H5AD cell data should either be anndata or zellkonverter.")
+  }
   destFile <- downloadCellProcessedFile(myBgeeObject = myBgeeObject, experimentId = experimentId)
   error_message <- NULL
   experimentH5ad <- NULL
@@ -57,10 +60,7 @@ downloadCellProcessedFile <- function(myBgeeObject, experimentId) {
   if (length(experimentId) != 1) {
     stop("One experimentId has to be provided.")
   }
-  if(length(package) != 1 | ! package %in% c("anndata", "zellkonverter")) {
-    stop("the R package used to load H5AD cell data should either be anndata or zellkonverter.")
-  }
-  if (length(myBgeeObject$dataType) != 1 | ! myBgeeObject$dataType %in% c("sc_droplet_based", "sc_full_length")) {
+  if (length(myBgeeObject$dataType) != 1 || ! myBgeeObject$dataType %in% c("sc_droplet_based", "sc_full_length")) {
     stop("Cell raw data are only available for single cell data. Please choose \"sc_droplet_based\" or \"sc_full_length\"",
          " as a datatpe of the Bgee object to be able to download such data")
   }
