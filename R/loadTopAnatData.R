@@ -143,7 +143,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     } else {
       unlink(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
       serverAnswer = try(getURL(myUrl))
-      if (class(serverAnswer) == "try-error"){
+      if (inherits(serverAnswer, "try-error")){
         stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
       } else {
         stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", trimws(serverAnswer)))
@@ -188,7 +188,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     } else {
       unlink(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
       serverAnswer = try(getURL(myUrl))
-      if (class(serverAnswer) == "try-error"){
+      if (inherits(serverAnswer, "try-error")){
         stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
       } else {
         stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", trimws(serverAnswer)))

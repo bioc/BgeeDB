@@ -137,7 +137,7 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
 ## Take in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
 .extract.data <- function(data, columns, callType){
   ## if multiple data frames (multiple experiments or chips)
-  if(class(data) == "list"){
+  if(inherits(data, "list")){
     calls <- lapply(data, function(x) .calling(x, callType, columns[3]))
     expr <- lapply(calls,
                    function(x) {

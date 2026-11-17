@@ -85,10 +85,10 @@ Bgee <- setRefClass(
       ## Get release information
       cat("\nQuerying Bgee to get release information...\n")
       allReleases <- try(.getBgeeRelease(removeFile = FALSE), silent=TRUE)
-      if (class(allReleases) == "data.frame"){
+      if (is.data.frame(allReleases)){
         file.rename(from=file.path(getwd(), 'release.tsv'),
                     to=file.path(pathToData, "release.tsv"))
-      } else if (class(allReleases) == "try-error"){
+      } else if (inherits(allReleases, "try-error")){
         if (file.exists(file.path(pathToData, "release.tsv"))){
           cat(paste0("\nWARNING: BgeeDB could not access Bgee releases information from the internet, but a release information file was found in the download directory ",
                      pathToData, ". This release file will be used, but be warned that it may not be up to date!\n"))
@@ -99,7 +99,7 @@ Bgee <- setRefClass(
       }
 
       if (length(release) == 0) {
-        release <<- gsub("\\.", "_", format(allReleases$release, drop0Trailing = F)[1])
+        release <<- gsub("\\.", "_", format(allReleases$release, drop0Trailing = FALSE)[1])
       } else if (length(release) == 1) {
         # In case the release number is written with a dot
         release <<- as.character(gsub("\\.", "_", release))
