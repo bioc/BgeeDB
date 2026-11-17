@@ -64,6 +64,15 @@ and datatype using specified filters with operator AND.
 Deprecated : This function loads the quantitative expression data and presence calls
 for samples available from Bgee (rna_seq, affymetrix, sc_full_length).
 }
+\examples{
+{
+  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+  dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
+  dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), 
+                             anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
+}
+
+}
 \author{
 Julien Wollbrett, Andrea Komljenovic and Julien Roux.
 }
