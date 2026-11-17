@@ -45,13 +45,6 @@
 #'
 #' @author Julien Wollbrett, Andrea Komljenovic and Julien Roux.
 #'
-#' @examples{
-#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-#'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
-#'   dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), 
-#'                              anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
-#' }
-#'
 #' @import RSQLite
 #' @importFrom R.utils gunzip
 #' @export
