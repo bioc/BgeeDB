@@ -135,7 +135,7 @@ It is sometimes easier to work with data organized as a matrix, where rows repre
 
 The ```callType``` argument allows to retain only actively expressed genes or probesets, if set to "present" or "present high quality". Genes or probesets that are absent in a given sample are given ```NA``` values.
 
-```{r}
+```{r format-data}
 # use only present calls and fill expression matrix with TPM values
 gene.expression.zebrafish.tpm <- formatData(bgee, data_bgee_zebrafish_gse68666, callType = "present", stats = "tpm")
 gene.expression.zebrafish.tpm 
@@ -160,7 +160,7 @@ For some documentation on the TopAnat analysis, please refer to our publications
 #### Create a new Bgee object
 Similarly to the quantitative data download example above, the first step of a topAnat analysis is to built an object from the Bgee class. For this example, we will focus on zebrafish:
 
-```{r}
+```{r create-topanat-bgee-object}
 # Creating new Bgee class object
 bgee <- Bgee$new(species = "Danio_rerio", release = "15.2")
 ```
@@ -171,7 +171,7 @@ bgee <- Bgee$new(species = "Danio_rerio", release = "15.2")
 
 The ```loadTopAnatData()``` function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures. 
 
-```{r}
+```{r load-topanat-data}
 # Loading calls of expression
 myTopAnatData <- loadTopAnatData(bgee)
 # Look at the data
@@ -180,7 +180,7 @@ myTopAnatData <- loadTopAnatData(bgee)
 
 The stringency on the quality of expression calls can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the a Uberon stage Id in the ```stage``` argument. 
 
-```{r, eval=FALSE}
+```{r load-affymetrix-calls, eval=FALSE}
 ## Loading silver and gold expression calls from affymetrix data made on embryonic samples only 
 ## This is just given as an example, but is not run in this vignette because only few data are returned
 bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix", release = "15.2")
@@ -197,7 +197,7 @@ myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="silve
 
 First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes with an annotated phenotype related to "pectoral fin" . We use the ```biomaRt``` package to retrieve this list of genes. We expect them to be enriched for expression in male tissues, notably the testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
 
-```{r, eval=FALSE}
+```{r build-gene-list, eval=FALSE}
 # if (!requireNamespace("BiocManager", quietly=TRUE))
     # install.packages("BiocManager")
 # BiocManager::install("biomaRt")
@@ -224,7 +224,7 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 
 The above code using the `biomaRt` package is not executed in this vignette to prevent building issues of our package in case of biomaRt downtime. Instead we use a `geneList` object saved in the `data/` folder that we built using pre-downloaded data. 
 
-```{r}
+```{r load-gene-list}
 data(geneList)
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 ```
@@ -235,7 +235,7 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 
 For this step, see the vignette of the ```topGO``` package for more details, as you have to directly use the tests implemented in the ```topGO``` package, as shown in this example:
 
-```{r}
+```{r run-topanat-test}
 results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 ```
 
@@ -245,7 +245,7 @@ results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 
 The ```makeTable``` function allows to filter and format the test results, and calculate FDR values. 
 
-```{r}
+```{r make-results-table}
 # Display results sigificant at a 1% FDR threshold
 tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.01)
 head(tableOver)
@@ -257,7 +257,7 @@ By default results are sorted by p-value, but this can be changed with the ```or
 
 Of note, it is possible to retrieve for a particular tissue the significant genes that were mapped to it.
 
-```{r}
+```{r genes-of-a-term}
 # In order to retrieve significant genes mapped to the term " paired limb/fin bud"
 term <- "UBERON:0004357"
 termStat(myTopAnatObject, term) 
@@ -275,7 +275,7 @@ annotated[annotated %in% sigGenes(myTopAnatObject)]
 
 The ```printTopAnatGraph``` function draws, in a PDF file, the most significant conditions and all their ancestors, with their names, their p-values and their numbers of significant and annotated genes. It needs the ```Rgraphviz``` package.
 
-```{r, eval=FALSE}
+```{r print-topanat-graph, eval=FALSE}
 # The 5 most significant conditions and their ancestors
 printTopAnatGraph(myTopAnatData, myTopAnatObject, results, firstSigNodes = 5, fileName = "topAnat_graph.pdf")
 ```
@@ -284,7 +284,7 @@ printTopAnatGraph(myTopAnatData, myTopAnatObject, results, firstSigNodes = 5, fi
 
 From Bgee 16, the analysis without decorrelation is the classic Fisher test on the expression calls propagated by Bgee: it is the test the TopAnat web page runs when no decorrelation method is requested. BgeeDB computes it itself, without ```topGO```, that would propagate these calls again: the counts and the p-values are those of the classic algorithm of ```topGO```, much faster for the species with many conditions. The ```termStat```, ```genesInTerm``` and ```sigGenes``` functions shown above, ```makeTable``` and ```printTopAnatGraph``` work on its object.
 
-```{r, eval=FALSE}
+```{r test-propagated-calls, eval=FALSE}
 ## Not run in this vignette, built on Bgee 15.2
 bgee16 <- Bgee$new(species = "Danio_rerio", release = "16.0")
 # Loading the expression calls propagated by Bgee, the default from Bgee 16
@@ -298,7 +298,7 @@ head(tableClassic)
 
 From Bgee 16, ```topAnat``` also restricts the gene list to a background, by default the protein coding genes, downloaded from Bgee. The ```background``` argument chooses another background: "polyA" for the genes of the biotypes captured by polyA RNA-Seq, "observed" for the genes with at least one observation of expression, or a vector of gene IDs; the gene IDs of the gene list itself keep it whole. The previous releases are not concerned. Instead of a gene list, the ```foregroundGenes``` argument takes the genes of interest alone: the gene list is then built from the background.
 
-```{r, eval=FALSE}
+```{r test-background, eval=FALSE}
 ## Not run in this vignette, built on Bgee 15.2
 # The genes of the biotypes captured by polyA RNA-Seq as background
 myPolyAObject <- topAnat(myPropagatedData, geneList, background = "polyA")
@@ -322,7 +322,7 @@ This approach comes with some drawbacks :
 It is possible to remove .rds files generated in previous versions of BgeeDB and not used anymore since version
 2.14.0. The function below delete all .rds files for the selected species and for all datatype.
 
-```{r eval = FALSE}
+```{r delete-old-data, eval = FALSE}
 bgee <- Bgee$new(species="Mus_musculus", release = "14.1")
 # delete all old .rds files of species Mus musculus
 deleteOldData(bgee)
@@ -330,7 +330,7 @@ deleteOldData(bgee)
 
 As the new SQLite approach use more disk space it is now possible to delete all local data of one species from one release of Bgee.
 
-```{r eval = FALSE}
+```{r delete-local-data, eval = FALSE}
 bgee <- Bgee$new(species="Mus_musculus", release = "14.1")
 # delete local SQLite database of species Mus musculus from Bgee 14.1
 deleteLocalData(bgee)
