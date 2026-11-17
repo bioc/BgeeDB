@@ -40,7 +40,6 @@ getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonv
   } else if (package == "anndata") {
     tryCatch( { experimentH5ad <- read_h5ad(filename = destFile) },
       error = function(e) {error_message <<- e})
-    experimentH5ad <- read_h5ad(filename = destFile)
   }
   if (! is.null(error_message)) {
     stop("an error occured : ", error_message)
