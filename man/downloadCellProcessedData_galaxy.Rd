@@ -36,6 +36,14 @@ This function download the processed gene count sparse matrix of single cell exp
 in Bgee. These data are available for all droplet based single-cell RNA-seq and full length
 single-cell RNA-seq. These files are stored in the H5AD format.
 }
+\examples{
+{
+  downloadCellProcessedData_galaxy(species = "Homo_sapiens", dataType = "sc_full_length",
+                                   experimentId = "SRP050499",
+                                   cellProcessedDataFile = tempfile(fileext = ".h5ad"))
+}
+
+}
 \author{
 Julien Wollbrett
 }

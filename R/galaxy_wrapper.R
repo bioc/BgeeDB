@@ -14,6 +14,11 @@
 #' @param experimentAnnotationPath path to the file containing experiment annotation
 #' @param sampleAnnotationPath path to the file containing sample annotation
 #' @return No return value.
+#' @examples{
+#'   getAnnotation_galaxy(species = "Mus_musculus", dataType = "rna_seq",
+#'                        experimentAnnotationPath = tempfile(fileext = ".tsv"),
+#'                        sampleAnnotationPath = tempfile(fileext = ".tsv"))
+#' }
 #' @export
 
 getAnnotation_galaxy <- function(species = NULL, dataType = character(0),
@@ -76,6 +81,11 @@ getAnnotation_galaxy <- function(species = NULL, dataType = character(0),
 #' This functionality is available for Bgee 15.0 release and after
 #' @param sampleProcessedOutputFile path to the file containing sample processed data.
 #' @return No return value.
+#' @examples{
+#'   getSampleProcessedData_galaxy(species = "Mus_musculus", dataType = "rna_seq",
+#'                                 experimentId = "GSE43721",
+#'                                 sampleProcessedOutputFile = tempfile(fileext = ".tsv"))
+#' }
 #' @export
 
 getSampleProcessedData_galaxy <- 
@@ -303,6 +313,10 @@ topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = N
 #' It has to be IDs (e.g UBERON:0000955) and not names (e.g brain)
 #' @param callsOutputFile name of the file where intergrated calls will be stored
 #' @return No return value.
+#' @examples{
+#'   getIntergratedCalls_galaxy(species = "Danio_rerio", geneIds = "ENSDARG00000014722",
+#'                              callsOutputFile = tempfile(fileext = ".tsv"))
+#' }
 #' @export
 #' 
 getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "anatEntity",
@@ -339,7 +353,13 @@ getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "an
 #' is the H5AD file copied to `cellProcessedDataFile`.
 #'
 #' @author Julien Wollbrett
-#' 
+#'
+#' @examples{
+#'   downloadCellProcessedData_galaxy(species = "Homo_sapiens", dataType = "sc_full_length",
+#'                                    experimentId = "SRP050499",
+#'                                    cellProcessedDataFile = tempfile(fileext = ".h5ad"))
+#' }
+#'
 #' @export
 
 downloadCellProcessedData_galaxy <- function(species = NULL, dataType = character(0),

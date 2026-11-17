@@ -81,3 +81,10 @@ ontologies, allowing to retrieve data annotated with the selected term or with t
 This option allows for instance to retrieve all processed expression values coming from the brain or
 any subpart of the brain.
 }
+\examples{
+{
+  getSampleProcessedData_galaxy(species = "Mus_musculus", dataType = "rna_seq",
+                                experimentId = "GSE43721",
+                                sampleProcessedOutputFile = tempfile(fileext = ".tsv"))
+}
+}

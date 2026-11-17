@@ -46,3 +46,9 @@ equivalent to the one provided in the gene page of the Bgee website. The calls h
 generated using all datatypes present in Bgee (EST, In Situ, Affymetrix, bulk RNA-Seq and
 single-cell RNA-Seq).
 }
+\examples{
+{
+  getIntergratedCalls_galaxy(species = "Danio_rerio", geneIds = "ENSDARG00000014722",
+                             callsOutputFile = tempfile(fileext = ".tsv"))
+}
+}

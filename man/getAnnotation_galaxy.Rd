@@ -32,3 +32,10 @@ No return value.
 \description{
 Adapter of the \code{getAnnotation} function allowing to run it on Galaxy.
 }
+\examples{
+{
+  getAnnotation_galaxy(species = "Mus_musculus", dataType = "rna_seq",
+                       experimentAnnotationPath = tempfile(fileext = ".tsv"),
+                       sampleAnnotationPath = tempfile(fileext = ".tsv"))
+}
+}
