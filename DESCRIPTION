@@ -3,8 +3,11 @@ Type: Package
 Title: Annotation and gene expression data retrieval from Bgee database. TopAnat, an anatomical entities Enrichment Analysis tool for UBERON ontology
 Version: 2.39.6
 Date: 2026-10-13
-Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
-Maintainer: Julien Wollbrett <julien.wollbrett@unil.ch>, Julien Roux <julien.roux@unibas.ch>, Andrea Komljenovic  <andreakomljenovic@gmail.com>, Frederic Bastian <bgee@sib.swiss>
+Authors@R: c(
+    person("Julien", "Wollbrett", email = "julien.wollbrett@unil.ch", role = c("aut", "cre")),
+    person("Julien", "Roux", email = "julien.roux@unibas.ch", role = "aut"),
+    person("Andrea", "Komljenovic", email = "andreakomljenovic@gmail.com", role = "aut"),
+    person("Frederic", "Bastian", email = "bgee@sib.swiss", role = "aut"))
 Description: A package for the annotation and gene expression
     data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms,
     mapped to genes by expression patterns.
