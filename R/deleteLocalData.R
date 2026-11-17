@@ -10,9 +10,7 @@
 #'  corresponding to the datatype of the `myBgeeObject` object will be deleted from the local
 #'  sqlite database.
 #'
-#' @return No return value, called for its side effects: the local sqlite database file is
-#' deleted if `allDataTypes` is TRUE, otherwise only the data of the datatype of the
-#' `myBgeeObject` object are removed from it.
+#' @return No return value.
 #'
 #' @author Julien Wollbrett
 #'

@@ -68,8 +68,7 @@ This functionality is available for Bgee 15.0 release and after}
 \item{sampleProcessedOutputFile}{path to the file containing sample processed data.}
 }
 \value{
-No return value, called for its side effects: the processed expression data are
-written as a tab-separated file to \code{sampleProcessedOutputFile}.
+No return value.
 }
 \description{
 This function loads the quantitative expression data and presence calls
