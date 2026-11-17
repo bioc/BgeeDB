@@ -3,7 +3,7 @@ context("expect_output")
 
 test_that("Gene expression files", {
   bgee <- Bgee$new(species = "Drosophila_simulans", dataType = "rna_seq")
-  data_bgee_mouse <- getData(bgee)
+  data_bgee_mouse <- getSampleProcessedData(bgee)
 
 
   expect_that( data_bgee_mouse, is_a("data.frame") )

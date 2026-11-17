@@ -24,7 +24,7 @@ rather from one datatype or all datatypes of one species.
 \examples{
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-  data <- getData(bgee, experimentId = "SRP007359")
+  data <- getSampleProcessedData(bgee, experimentId = "SRP007359")
   deleteLocalData(bgee, allDataTypes = TRUE)
 }
 

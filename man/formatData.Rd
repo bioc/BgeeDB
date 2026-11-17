@@ -37,7 +37,7 @@ This function formats the data downloaded with the getSampleRawData() function i
 \examples{
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-  dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
+  dataMouseGSE43721 <- getSampleProcessedData(bgee, experimentId = "GSE43721")
   dataMouseGSE43721.tpm <- formatData(bgee,
                                        dataMouseGSE43721,
                                        callType = "present",

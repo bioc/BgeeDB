@@ -3,7 +3,7 @@ context("expect_output")
 
 test_that("Formatting gene expression files", {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-  data_bgee_mouse_exp <- getData(bgee, experimentId  = "GSE43721")
+  data_bgee_mouse_exp <- getSampleProcessedData(bgee, experimentId  = "GSE43721")
   gene.expression <- formatData(bgee, data_bgee_mouse_exp, callType = "present", stats = "tpm")
   expect_true(class(gene.expression) == "ExpressionSet" )
   gene.expression <- formatData(bgee, data_bgee_mouse_exp, callType = "present", stats = "counts")
@@ -16,7 +16,7 @@ test_that("Formatting gene expression files", {
                "Choose whether data formatting should create a matrix of TPMs or read counts, with stats option set as \"tpm\" or \"counts\"")
   #test formatting for files generated before bgee_v14
   bgee_v13 <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq", release = "13_2")
-  data_bgee_mouse_exp_v13 <- getData(bgee_v13, experimentId  = "GSE43721")
+  data_bgee_mouse_exp_v13 <- getSampleProcessedData(bgee_v13, experimentId  = "GSE43721")
   expect_error(formatData(bgee_v13, data_bgee_mouse_exp_v13, callType = "present", stats = "tpm"), 
                "Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
   expect_error(formatData(bgee_v13, data_bgee_mouse_exp_v13, callType = "present", stats = "fpkm"), 
