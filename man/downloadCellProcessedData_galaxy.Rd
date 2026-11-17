@@ -6,12 +6,19 @@
 \usage{
 downloadCellProcessedData_galaxy(
   species = NULL,
+  dataType = character(0),
   experimentId = NULL,
   cellProcessedDataFile = NULL
 )
 }
 \arguments{
 \item{species}{name of the species for which annotation have to be be retrieved (e.g Homo_sapiens)}
+
+\item{dataType}{The single-cell datatype of the experiment. To be chosen among:
+\itemize{
+\item{"sc_full_length: full length single-cell RNA-seq data"}
+\item{"sc_droplet_based: droplet based single-cell RNA-seq data"}
+}}
 
 \item{experimentId}{Filter allowing to specify one ArrayExpress or GEO accession, e.g.,
 GSE43721. Can not be null}

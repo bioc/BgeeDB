@@ -324,6 +324,11 @@ getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "an
 #' single-cell RNA-seq. These files are stored in the H5AD format.
 #'
 #' @param species name of the species for which annotation have to be be retrieved (e.g Homo_sapiens)
+#' @param dataType The single-cell datatype of the experiment. To be chosen among:
+#' \itemize{
+#'   \item{"sc_full_length: full length single-cell RNA-seq data"}
+#'   \item{"sc_droplet_based: droplet based single-cell RNA-seq data"}
+#' }
 #' @param experimentId Filter allowing to specify one ArrayExpress or GEO accession, e.g., 
 #' GSE43721. Can not be null 
 #' @param cellProcessedDataFile Name of the file where processed expression values at cell
@@ -337,9 +342,10 @@ getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "an
 #' 
 #' @export
 
-downloadCellProcessedData_galaxy <- function(species = NULL, experimentId = NULL,
+downloadCellProcessedData_galaxy <- function(species = NULL, dataType = character(0),
+                                             experimentId = NULL,
                                              cellProcessedDataFile = NULL) {
-  myBgeeObject <- createBgeeObject_galaxy(species = species)
+  myBgeeObject <- createBgeeObject_galaxy(species = species, dataTypes = dataType)
   destFile <- downloadCellProcessedFile(myBgeeObject = myBgeeObject,
                                         experimentId = experimentId)
   file.copy(from = destFile, to = cellProcessedDataFile)
@@ -353,7 +359,7 @@ downloadCellProcessedData_galaxy <- function(species = NULL, experimentId = NULL
 #' provided one does not exist
 #' @noRd
 #' @noMd
-createBgeeObject_galaxy <- function(species = NULL, dataTypes = NULL) {
+createBgeeObject_galaxy <- function(species = NULL, dataTypes = character(0)) {
   # then check the species
   invisible(capture.output(bgeeSpecies <- listBgeeSpecies()))
   bgeeSpecies$formatedSpeciesName <- paste0(gsub(" ", "_", bgeeSpecies$GENUS),
