@@ -48,6 +48,6 @@ listBgeeRelease <- function(release=NULL){
     stop("ERROR: File describing releases could not be downloaded from FTP.")
   }
   ## Keep release available with the current version of the package
-  allAvailableReleases <- allReleases[  sapply(as.character(allReleases$minimumVersionBgeeDB), compareVersion, as.character(packageVersion("BgeeDB"))) <= 0,]
+  allAvailableReleases <- allReleases[  vapply(as.character(allReleases$minimumVersionBgeeDB), compareVersion, numeric(1), as.character(packageVersion("BgeeDB"))) <= 0,]
   return(allAvailableReleases)
 }

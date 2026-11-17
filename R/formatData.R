@@ -40,7 +40,7 @@
 #' @importFrom tidyr spread all_of
 #' @export
 
-formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
+formatData <- function(myBgeeObject, data, stats = NULL, callType = "all"){
 
   ## check that fields of Bgee object are not empty
   if (length(myBgeeObject$quantitativeData) == 0 | length(myBgeeObject$dataType) == 0){
@@ -142,7 +142,7 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     expr <- lapply(calls,
                    function(x) {
                      ## subset the data to keep relevant columns
-                     xt <- x[, columns[1:3]]
+                     xt <- x[, columns[seq_len(3)]]
                      ## from sample and feature columns, create a matrix with features as rows and samples as columns
                      xtt <- xt %>% spread(key = all_of(columns[1]), value = all_of(columns[3]))
                      rownames(xtt) <- xtt[, columns[2]]
@@ -158,7 +158,7 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     ## if only a single dataframe
     calls <- .calling(data, callType, columns[3])
     ## subset the data to keep relevant columns
-    xt <- calls[, columns[1:3]]
+    xt <- calls[, columns[seq_len(3)]]
     xtt <- xt %>% spread(key = all_of(columns[1]), value = all_of(columns[3]))
     rownames(xtt) <- xtt[, columns[2]]
     ## Remove feature column to keep only data

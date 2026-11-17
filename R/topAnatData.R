@@ -13,11 +13,11 @@
   if(any(is.na(gene2Nodes)))
     gene2Nodes <- gene2Nodes[!is.na(gene2Nodes)]
 
-  gene2Nodes <- gene2Nodes[sapply(gene2Nodes, length) > 0]
+  gene2Nodes <- gene2Nodes[vapply(gene2Nodes, length, integer(1)) > 0]
 
   ## Get all the Terms and keep a one-to-one mapping with the genes
   allNodes <- unlist(gene2Nodes, use.names = FALSE)
-  geneID <- rep(names(gene2Nodes), sapply(gene2Nodes, length))
+  geneID <- rep(names(gene2Nodes), vapply(gene2Nodes, length, integer(1)))
 
   return(split(geneID, allNodes))
 }
@@ -73,7 +73,7 @@
     if(length(adjNodes) == 0)
       cat('\n There are no adj nodes for node: ', node, '\n')
 
-    for(i in 1:length(adjNodes)) {
+    for(i in seq_along(adjNodes)) {
       x <- as.character(adjNodes[i])
       envAddEdge(node, x)
       buildInducedGraph(x)
@@ -152,7 +152,7 @@ setMethod("initialize", "topAnatData",
             }
 
             ## size of the nodes which will be pruned
-            .Object@nodeSize = as.integer(max(nodeSize, 1))
+            .Object@nodeSize <- as.integer(max(nodeSize, 1))
 
             ## this function is returning a list of terms from the specified ontology
             ## with each entry being a vector of genes

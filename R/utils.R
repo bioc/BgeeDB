@@ -72,7 +72,7 @@ COMPRESSED_RESPONSE_END <- as.raw(c(0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x
   }
   con <- file(path, "rb")
   on.exit(close(con))
-  if (!identical(readBin(con, "raw", 2), COMPRESSED_RESPONSE_END[1:2])) {
+  if (!identical(readBin(con, "raw", 2), COMPRESSED_RESPONSE_END[seq_len(2)])) {
     seek(con, max(0, size - 64))
     return(.endsWithBlankLines(readBin(con, "raw", 64)))
   }

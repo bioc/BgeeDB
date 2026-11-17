@@ -105,7 +105,7 @@ getSampleProcessedData <- function(myBgeeObject, experimentId = NULL, sampleId =
                     strain = strain))
 }
 
-check_object = function(myBgeeObject, experimentId = NULL){
+check_object <- function(myBgeeObject, experimentId = NULL){
   ## check that the Bgee object is valid
   if (length(myBgeeObject$quantitativeData) == 0 ){
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields ", 
@@ -135,7 +135,7 @@ check_object = function(myBgeeObject, experimentId = NULL){
   }
 }
 
-check_condition_parameters = function(myBgeeObject, anatEntityId, stageId, 
+check_condition_parameters <- function(myBgeeObject, anatEntityId, stageId, 
                                       cellTypeId, sex, strain){
   ## check that the condition parameters queried are compatible with Bgee release
   ## selected
@@ -154,7 +154,7 @@ sqlitePath <- function(myBgeeObject){
   return(sqlite_file)
 }
 
-import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+import_data <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
                        anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   user_experiments <- detect_experiments(myBgeeObject, experimentId, sampleId, anatEntityId, 
                                          stageId, cellTypeId, sex, strain)
@@ -170,7 +170,7 @@ import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL,
 } 
 
 # function using annotations to select which experiments the user needs to load all wanted data
-detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+detect_experiments <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
                               anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   annotation <- suppressMessages(getAnnotation(myBgeeObject))
   experiments <- annotation$sample.annotation
@@ -218,7 +218,7 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
 
 # function that check among experiment wanted by user which one are already stored in the local database.
 # return experiments not already present in the database.
-experiments_to_download = function(myBgeeObject, experimentId, sqlite_file) {
+experiments_to_download <- function(myBgeeObject, experimentId, sqlite_file) {
   if (file.exists(sqlite_file)) {
     conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
     on.exit(dbDisconnect(conn))
@@ -236,7 +236,7 @@ experiments_to_download = function(myBgeeObject, experimentId, sqlite_file) {
 # function that take care of both downloading and integrating data in the local database
 # one local database is created per species (for the moment the package does not contain any
 # multispecies functionality)
-integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
+integrate_experiments <- function(myBgeeObject, experimentId, sqlite_file) {
   if (!length(experimentId) == 0) {
     message("downloading data from Bgee FTP...")
     # If more than 15 experiments have to be downloaded then download all experiments of this 
@@ -272,7 +272,7 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
 
 # function that download all data of one species for the specified datatype from the ftp
 # return the name of all uncompressed files
-download_and_uncompress_species = function(myBgeeObject, experimentId) {
+download_and_uncompress_species <- function(myBgeeObject, experimentId) {
   message("Downloading all expression data for species ", myBgeeObject$speciesName)
   
   #temporarily update timeout option
@@ -361,7 +361,7 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
 
 # function that download a list of experiments from the ftp and return the name of downloaded
 # uncompressed files
-download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
+download_and_uncompress_experiment <- function(myBgeeObject, experimentId) {
   message("download experiments")
   #temporarily update timeout option
   op <- options(timeout = 1800)
@@ -393,7 +393,7 @@ download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
 }
 
 # function that query the data in the local database
-query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, 
+query_data <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, 
                       stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
                       sqlite_file = sqlitePath(myBgeeObject)) {
   conn <- dbConnect(RSQLite::SQLite(), sqlite_file)

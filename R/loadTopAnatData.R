@@ -62,10 +62,10 @@
 #' @export
 loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL, timeout = 1800,
                             callFileType = NULL){
-  OLD_WEBSERVICE_VERSION = '13.2'
+  OLD_WEBSERVICE_VERSION <- '13.2'
   ## The first release serving the expression calls from the files generated for topAnat
-  CALL_FILE_VERSION = '16.0'
-  ROOT_STAGE_ID = 'UBERON:0000104'
+  CALL_FILE_VERSION <- '16.0'
+  ROOT_STAGE_ID <- 'UBERON:0000104'
 
   ## check that fields of Bgee object are not empty
   if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0 | length(myBgeeObject$sendStats) == 0){
@@ -76,14 +76,14 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   }
   if ( compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0 ){
     if ( is.null(confidence) ){
-      confidence = "silver"
+      confidence <- "silver"
     }
     if ( (confidence != "gold") && (confidence != "silver") ){
       stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ", myBgeeObject$release, " allowed values are \"silver\" or \"gold\".\nBy default \"silver\" quality is selected."))
     }
   } else {
     if(is.null(confidence)){
-      confidence = "all"
+      confidence <- "all"
     }
     if ( (confidence != "all") && (confidence != "high_quality") ){
       stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ", myBgeeObject$release, " allowed values are \"all\" or \"high_quality\".\nBy default \"all\" quality is selected."))
@@ -142,7 +142,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
       unlink(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
-      serverAnswer = try(getURL(myUrl))
+      serverAnswer <- try(getURL(myUrl))
       if (inherits(serverAnswer, "try-error")){
         stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
       } else {
@@ -187,7 +187,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
      cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
       unlink(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
-      serverAnswer = try(getURL(myUrl))
+      serverAnswer <- try(getURL(myUrl))
       if (inherits(serverAnswer, "try-error")){
         stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
       } else {
@@ -423,8 +423,8 @@ loadTopAnatDataFromFiles <- function(gene2conditionFile, conditionNamesFile,
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
   ## Add new keys
-  names(organRelationships)[(length(organRelationships) - length(missingParents) + 1):length(organRelationships)] = as.character(missingParents)
-  ## Add BGEE:0	/ root to organNames
+  names(organRelationships)[(length(organRelationships) - length(missingParents) + 1):length(organRelationships)] <- as.character(missingParents)
+  ## Add BGEE:0 / root to organNames
   organNames <- rbind(organNames, c("BGEE:0", "root"))
 
   ## Check if some organ names are missing, and add them if necessary

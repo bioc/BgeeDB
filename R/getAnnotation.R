@@ -15,7 +15,7 @@
 #'
 #' @export
 
-getAnnotation = function(myBgeeObject){
+getAnnotation <- function(myBgeeObject){
 
   ## check that the Bgee object is valid
   if (length(myBgeeObject$quantitativeData) == 0 ){

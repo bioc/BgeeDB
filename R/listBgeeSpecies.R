@@ -25,8 +25,8 @@
 
 listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, removeFile=TRUE){
   
-  OLD_WEBSERVICE_VERSION = '13.2'
-  NEW_VERSION_FROM_FTP_FILE = '15.2'
+  OLD_WEBSERVICE_VERSION <- '13.2'
+  NEW_VERSION_FROM_FTP_FILE <- '15.2'
 
   if (length(allReleases)==0) {
     cat("\nQuerying Bgee to get release information...\n")

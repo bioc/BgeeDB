@@ -60,7 +60,7 @@ Bgee <- setRefClass(
       callSuper(..., sqlite_extension="_bgee.db")
 
       ## check data type. When none is specified, those of the release are used, set once the release is known
-      if ( length(dataType) > 0 && !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")) %in% 1:6 ){
+      if ( length(dataType) > 0 && !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")) %in% seq_len(6) ){
         stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"sc_full_length\", \"sc_droplet_based\", \"est\" and \"in_situ\".")
       }
       if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ", "sc_full_length", "sc_droplet_based")) ){
