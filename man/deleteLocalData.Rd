@@ -14,6 +14,11 @@ should be deleted. If TRUE, the local sqlite database file is deleted. If FALSE,
 corresponding to the datatype of the \code{myBgeeObject} object will be deleted from the local
 sqlite database.}
 }
+\value{
+No return value, called for its side effects: the local sqlite database file is
+deleted if \code{allDataTypes} is TRUE, otherwise only the data of the datatype of the
+\code{myBgeeObject} object are removed from it.
+}
 \description{
 This function delete data present in the local database. It can delete data
 rather from one datatype or all datatypes of one species.

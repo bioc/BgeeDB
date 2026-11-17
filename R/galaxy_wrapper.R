@@ -13,6 +13,9 @@
 #' }
 #' @param experimentAnnotationPath path to the file containing experiment annotation
 #' @param sampleAnnotationPath path to the file containing sample annotation
+#' @return No return value, called for its side effects: the experiment annotation and the
+#' sample annotation are written as tab-separated files to `experimentAnnotationPath` and
+#' `sampleAnnotationPath`.
 #' @export
 
 getAnnotation_galaxy <- function(species = NULL, dataType = character(0),
@@ -74,6 +77,8 @@ getAnnotation_galaxy <- function(species = NULL, dataType = character(0),
 #' @param withDescendantCellTypes Allows to filter on the selected cellTypeId and all its descendants.
 #' This functionality is available for Bgee 15.0 release and after
 #' @param sampleProcessedOutputFile path to the file containing sample processed data.
+#' @return No return value, called for its side effects: the processed expression data are
+#' written as a tab-separated file to `sampleProcessedOutputFile`.
 #' @export
 
 getSampleProcessedData_galaxy <- 
@@ -141,6 +146,9 @@ getSampleProcessedData_galaxy <-
 #' For Bgee release 14 and above, options are "silver" (default) and "gold".
 #' 
 #' @param resultFile The file where GO-like enrichment of anatomical terms is stored
+#'
+#' @return No return value, called for its side effects: the table of results of the
+#' enrichment test is written as a tab-separated file to `resultFile`.
 #'
 #' @author Julien Wollbrett
 #'
@@ -298,6 +306,8 @@ topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = N
 #' @param anatEntityIds List of anatomical entity IDs for which expression calls have to be retrieved.
 #' It has to be IDs (e.g UBERON:0000955) and not names (e.g brain)
 #' @param callsOutputFile name of the file where intergrated calls will be stored
+#' @return No return value, called for its side effects: the integrated calls are written as
+#' a tab-separated file to `callsOutputFile`.
 #' @export
 #' 
 getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "anatEntity",
@@ -323,7 +333,11 @@ getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "an
 #' GSE43721. Can not be null 
 #' @param cellProcessedDataFile Name of the file where processed expression values at cell
 #' level is stored
-#' 
+#'
+#' @return A logical value, TRUE if the temporary copy of the H5AD file stored in the download
+#' directory was successfully removed (result of `file.remove`). The main output of the function
+#' is the H5AD file copied to `cellProcessedDataFile`.
+#'
 #' @author Julien Wollbrett
 #' 
 #' @export

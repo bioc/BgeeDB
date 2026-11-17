@@ -16,6 +16,10 @@ GSE43721. Can not be null}
 \item{package}{Name of the R package used to load the H5AD cell data. It can either be \"anndata\"
 or \"zellkonverter\". If zellkonverter is used then its default reader (R) is used.}
 }
+\value{
+The processed gene count matrix of the experiment. It is a \code{SingleCellExperiment}
+object if \code{package} is \"zellkonverter\", or an \code{AnnData} object if \code{package} is \"anndata\".
+}
 \description{
 This function loads the processed gene count matrix of single cell experiments in Bgee.
 These data are available for all droplet based single-cell RNA-seq and full length single-cell RNA-seq.

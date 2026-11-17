@@ -26,6 +26,11 @@ getAnnotation_galaxy(
 
 \item{sampleAnnotationPath}{path to the file containing sample annotation}
 }
+\value{
+No return value, called for its side effects: the experiment annotation and the
+sample annotation are written as tab-separated files to \code{experimentAnnotationPath} and
+\code{sampleAnnotationPath}.
+}
 \description{
 Adapter of the \code{getAnnotation} function allowing to run it on Galaxy.
 }

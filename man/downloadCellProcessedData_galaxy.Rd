@@ -19,6 +19,11 @@ GSE43721. Can not be null}
 \item{cellProcessedDataFile}{Name of the file where processed expression values at cell
 level is stored}
 }
+\value{
+A logical value, TRUE if the temporary copy of the H5AD file stored in the download
+directory was successfully removed (result of \code{file.remove}). The main output of the function
+is the H5AD file copied to \code{cellProcessedDataFile}.
+}
 \description{
 This function download the processed gene count sparse matrix of single cell experiments
 in Bgee. These data are available for all droplet based single-cell RNA-seq and full length

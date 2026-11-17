@@ -37,6 +37,10 @@ It has to be IDs (e.g UBERON:0000955) and not names (e.g brain)}
 
 \item{callsOutputFile}{name of the file where intergrated calls will be stored}
 }
+\value{
+No return value, called for its side effects: the integrated calls are written as
+a tab-separated file to \code{callsOutputFile}.
+}
 \description{
 Loads the integrated expression calls from one species. These calls are
 equivalent to the one provided in the gene page of the Bgee website. The calls have been

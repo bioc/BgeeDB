@@ -12,7 +12,10 @@
 #' 
 #' @param package Name of the R package used to load the H5AD cell data. It can either be \"anndata\"
 #' or \"zellkonverter\". If zellkonverter is used then its default reader (R) is used.
-#' 
+#'
+#' @return The processed gene count matrix of the experiment. It is a `SingleCellExperiment`
+#' object if `package` is \"zellkonverter\", or an `AnnData` object if `package` is \"anndata\".
+#'
 #' @author Julien Wollbrett
 #'
 #' @examples{

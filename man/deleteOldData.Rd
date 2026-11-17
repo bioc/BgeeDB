@@ -9,6 +9,11 @@ deleteOldData(myBgeeObject)
 \arguments{
 \item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species}
 }
+\value{
+A logical vector with one value per .rds file found in the download directory,
+TRUE if the file was successfully deleted (result of \code{file.remove}). It is empty if no .rds
+file was found.
+}
 \description{
 Since Bioconductor 3.11 BgeeDB store data in a local SQLite database allowing
 to optimize memory usage.

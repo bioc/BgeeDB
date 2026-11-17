@@ -8,8 +8,12 @@
 #' @param allDataTypes A boolean defining rather data of all datatypes from the selected species
 #'  should be deleted. If TRUE, the local sqlite database file is deleted. If FALSE, data
 #'  corresponding to the datatype of the `myBgeeObject` object will be deleted from the local
-#'  sqlite database. 
-#' 
+#'  sqlite database.
+#'
+#' @return No return value, called for its side effects: the local sqlite database file is
+#' deleted if `allDataTypes` is TRUE, otherwise only the data of the datatype of the
+#' `myBgeeObject` object are removed from it.
+#'
 #' @author Julien Wollbrett
 #'
 #' @examples{
@@ -44,7 +48,11 @@ deleteLocalData <- function(myBgeeObject, allDataTypes = FALSE) {
 #' than Bioconductor 3.11, for the species selected in the reference class Bgee object.
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species
-#' 
+#'
+#' @return A logical vector with one value per .rds file found in the download directory,
+#' TRUE if the file was successfully deleted (result of `file.remove`). It is empty if no .rds
+#' file was found.
+#'
 #' @author Julien Wollbrett
 #'
 #' @examples{

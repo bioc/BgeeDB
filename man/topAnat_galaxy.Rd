@@ -61,6 +61,10 @@ of tests can be retrieved with topGO::whichTests()}
 retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality".
 For Bgee release 14 and above, options are "silver" (default) and "gold".}
 }
+\value{
+No return value, called for its side effects: the table of results of the
+enrichment test is written as a tab-separated file to \code{resultFile}.
+}
 \description{
 This function GO-like enrichment of anatomical terms using the Uberon ontology.
 From Bgee 16, the classic algorithm, without decorrelation, runs on the expression calls propagated
