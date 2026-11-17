@@ -311,17 +311,17 @@ topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = N
 #' is RefSeq (e.g 734881) but not gene names (e.g HBB, Apoc1, etc.).
 #' @param anatEntityIds List of anatomical entity IDs for which expression calls have to be retrieved.
 #' It has to be IDs (e.g UBERON:0000955) and not names (e.g brain)
-#' @param callsOutputFile name of the file where intergrated calls will be stored
+#' @param callsOutputFile name of the file where integrated calls will be stored
 #' @return No return value.
 #' @examples{
-#'   getIntergratedCalls_galaxy(species = "Danio_rerio", geneIds = "ENSDARG00000014722",
-#'                              callsOutputFile = tempfile(fileext = ".tsv"))
+#'   getIntegratedCalls_galaxy(species = "Danio_rerio", geneIds = "ENSDARG00000014722",
+#'                             callsOutputFile = tempfile(fileext = ".tsv"))
 #' }
 #' @export
 #' 
-getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "anatEntity",
-                                       advancedColumns = FALSE, geneIds = NULL,
-                                       anatEntityIds = NULL, callsOutputFile = NULL) {
+getIntegratedCalls_galaxy <- function(species = NULL, conditionParameters = "anatEntity",
+                                      advancedColumns = FALSE, geneIds = NULL,
+                                      anatEntityIds = NULL, callsOutputFile = NULL) {
   myBgeeObject <- createBgeeObject_galaxy(species = species)
   integrated_calls <- getIntegratedCalls(myBgeeObject = myBgeeObject,
                                          conditionParameters = conditionParameters,
