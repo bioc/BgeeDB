@@ -1,7 +1,7 @@
 Package: BgeeDB
 Type: Package
 Title: Annotation and gene expression data retrieval from Bgee database. TopAnat, an anatomical entities Enrichment Analysis tool for UBERON ontology
-Version: 2.40.0
+Version: 2.41.0
 Date: 2026-10-13
 Authors@R: c(
     person("Julien", "Wollbrett", email = "julien.wollbrett@unil.ch", role = c("aut", "cre")),
